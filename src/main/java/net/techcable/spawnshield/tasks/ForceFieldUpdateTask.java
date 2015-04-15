@@ -28,7 +28,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.collect.*;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import jdk.nashorn.internal.ir.Block;
 import lombok.RequiredArgsConstructor;
 import net.techcable.spawnshield.SpawnShield;
 import net.techcable.spawnshield.SpawnShieldPlayer;

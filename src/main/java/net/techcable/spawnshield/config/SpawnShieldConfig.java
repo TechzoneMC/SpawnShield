@@ -48,6 +48,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 public class SpawnShieldConfig extends Config {
@@ -141,7 +142,7 @@ public class SpawnShieldConfig extends Config {
     @Synchronized("lock")
     public Collection<Pair<World, ProtectedRegion>> getRegionsToBlock() {
         if (cachedRegionsToBlock != null) return cachedRegionsToBlock;
-        cachedRegionsToBlock = Sets.newConcurrentHashSet();
+        cachedRegionsToBlock = Sets.newSetFromMap(new ConcurrentHashMap<Pair<World, ProtectedRegion>, Boolean>());
         Set<String> notFound = Sets.newHashSet(blockRegions);
         for (World world : Bukkit.getWorlds()) {
             RegionManager manager = WGBukkit.getRegionManager(world);
