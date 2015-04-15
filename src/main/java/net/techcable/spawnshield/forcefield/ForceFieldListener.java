@@ -1,0 +1,71 @@
+/**
+ * Copyright (c) 2015 Nicholas Schlabach
+ *
+ * If there is conflict between two versions of this license, [the version found on gtihub](https://gist.github.com/Techcable/ea146b481870e3736b48) will take precedence.
+ *
+ * Permission is granted to operate this program provided that:
+ * - You have purchased this plugin from Nicholas Schlabach (Techcable)
+ * - Techcable has given you his express permission to operate/run this program
+ * - Techcable has released this software publicly on either dev.bukkit.org, spigotmc.org or another software hosting site
+ * - You do not modify this software in any way
+ * - You do not redistrubute this software to anyone else
+ * - You do not attempt to deobfuscate, decompile, or reverese engneer this plugin in any way
+ * - Nicholas Schlabach (Techcable) reserves the right to change these terms an conditions at any time, with or without warning
+ *
+ * If any of the above terms are violated this plugin is no longer valid and you must stop using this software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+package net.techcable.spawnshield.forcefield;
+
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import net.techcable.spawnshield.CombatAPI;
+import net.techcable.spawnshield.SpawnShield;
+import net.techcable.spawnshield.SpawnShieldPlayer;
+import net.techcable.techutils.TechScheduler;
+import net.techcable.techutils.collect.Pair;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
+
+public class ForceFieldListener implements Listener {
+    public static final int DEFAULT_UPDATE_RADIUS = 20;
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onMove(PlayerMoveEvent event) {
+        if (event.getFrom().equals(event.getTo())) return; //Don't wanna fire if the player turned his head
+        if (!CombatAPI.isTagged(event.getPlayer())) return;
+        SpawnShieldPlayer player = SpawnShield.getInstance().getPlayer(event.getPlayer());
+        BlockPos pos = new BlockPos(player.getEntity().getLocation());
+        Collection<Region> toUpdate = new HashSet<>();
+        for (Pair<World, ProtectedRegion> wgRegion : SpawnShield.getInstance().getSettings().getRegionsToBlock()) {
+            if (wgRegion.getFirst().equals(event.getPlayer().getWorld())) continue; //We dont need this one: Yay!
+            ProtectedRegionRegion region = new ProtectedRegionRegion(wgRegion.getSecond(), wgRegion.getFirst());
+            toUpdate.add(region);
+        }
+        ForceFieldUpdateRequest request = new ForceFieldUpdateRequest(pos, toUpdate, player, DEFAULT_UPDATE_RADIUS);
+        player.updateForceField(request);
+    }
+}
