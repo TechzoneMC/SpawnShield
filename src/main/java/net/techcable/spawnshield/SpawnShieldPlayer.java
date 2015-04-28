@@ -75,7 +75,6 @@ public class SpawnShieldPlayer extends TechPlayer {
     @Synchronized("forceFieldUpdateLock")
     public void updateForceField(ForceFieldUpdateRequest request) {
        if (updateRequest == null || updateRequest.isCompleted()) {
-           updateRequest = null;
            updateRequest = request;
        }
     }

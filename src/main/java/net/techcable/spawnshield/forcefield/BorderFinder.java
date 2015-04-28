@@ -43,9 +43,19 @@ public class BorderFinder {
             getAlongX(point, region, result);
             getAlongZ(point, region, result);
         }
+        getBottomOrTop(region.getMin(), region, result);
+        getBottomOrTop(region.getMax(), region, result);
         return result;
     }
-    
+
+    private static void getBottomOrTop(BlockPos bottomOrTop, Region region, HashSet<BlockPos> result) {
+        for (int x = bottomOrTop.getX(); region.contains(x, bottomOrTop.getY(), bottomOrTop.getZ()); x++) {
+            for (int z = bottomOrTop.getZ(); region.contains(x, bottomOrTop.getY(), z); z++) {
+                result.add(new BlockPos(x, bottomOrTop.getY(), z, region.getWorld()));
+            }
+        }
+    }
+
     private static void getAlongX(BlockPos start, Region region, HashSet<BlockPos> result) {
         if (region.contains(start.getX() + 1, start.getY(), start.getZ())) { //We are positive
             for (int x = start.getX(); region.contains(x, start.getY(), start.getZ()); x++) {

@@ -27,8 +27,12 @@ package net.techcable.spawnshield.tasks;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.collect.*;
+import com.google.common.util.concurrent.AbstractFuture;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.Delegate;
 import net.techcable.spawnshield.SpawnShield;
 import net.techcable.spawnshield.SpawnShieldPlayer;
 import net.techcable.spawnshield.Utils;
@@ -39,65 +43,48 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 @RequiredArgsConstructor
-public class ForceFieldUpdateTask extends BukkitRunnable {
+public class ForceFieldUpdateTask extends AbstractFuture implements Runnable, ListenableFuture {
+
+    public static ListenableFuture<?> schedule(ForceFieldUpdateRequest request) {
+        ForceFieldUpdateTask task = new ForceFieldUpdateTask(request);
+        Bukkit.getScheduler().runTask(SpawnShield.getInstance(), task);
+        return task;
+    }
+    private final ForceFieldUpdateRequest request;
     @Override
     public void run() {
-        for (Player playerEntity : Bukkit.getOnlinePlayers()) {
-            SpawnShieldPlayer player = SpawnShield.getInstance().getPlayer(playerEntity);
-            ForceFieldUpdateRequest request = player.getUpdateRequest();
-            if (request == null || request.isCompleted()) continue;
-            processRequest(request);
-            request.setCompleted();
-        }
-    }
-
-    private void processRequest(ForceFieldUpdateRequest request) {
-        Set<BlockPos> nearbyBorderPoints = new HashSet<>();
+        Set<BlockPos> shownBlocks = new HashSet<BlockPos>();
         for (Region region : request.getRegionsToUpdate()) {
-            if (!region.getWorld().equals(request.getPosition().getWorld())) continue;
             for (BlockPos borderPoint : getBorders(region)) {
-                int distance = borderPoint.distanceSquared(request.getPosition());
-                if (distance <= request.getUpdateRadius()) {
-                    nearbyBorderPoints.add(borderPoint);
-                    Utils.debug("Near Distance " + distance);
-                } else {
-                    Utils.debug("Far Distance " + distance);
+                for (int y = region.getMin().getY(); y <= region.getMax().getY(); y++) {
+                    BlockPos toShow = borderPoint.withY(y);
+                    int distance = toShow.distanceSquared(request.getPosition());
+                    if (distance <= request.getUpdateRadius()) {
+                        shownBlocks.add(toShow);
+                    }
                 }
             }
         }
-        if (request.getPlayer().getLastShownBlocks() != null) {
-            for (BlockPos lastShown : request.getPlayer().getLastShownBlocks()) {
-                        /* I'm not sure if minecraft's chunk loading code is thread safe
-                         * Plus, a player can't see unloaded chunks, so we don't have to refresh them
-                         */
-                if (!lastShown.getChunkPos().isLoaded()) continue;
-                request.getPlayerEntity().sendBlockChange(lastShown.toLocation(), lastShown.getTypeAt(), lastShown.getDataAt());
-            }
+        Collection<BlockPos> lastShown = request.getPlayer().getLastShownBlocks();
+        if (lastShown == null) lastShown = new HashSet<>();
+        for (BlockPos noLongerShown : lastShown) {
+            if (shownBlocks.contains(noLongerShown)) continue; //We will show
+            request.getPlayerEntity().sendBlockChange(noLongerShown.toLocation(), noLongerShown.getTypeAt().getId(), noLongerShown.getDataAt());
         }
-        Set<BlockPos> shownBlocks = new HashSet<BlockPos>();
-        for (BlockPos borderPoint : nearbyBorderPoints) {
-                    /*
-                     * I'm not sure if minecraft's chunk loading code is thread safe
-                     * Plus no player will be near an unloaded chunk so we don't have to display then
-                     */
-            if (!borderPoint.getChunkPos().isLoaded()) continue;
-            for (int y = 0; y < borderPoint.getWorld().getMaxHeight(); y++) {
-                BlockPos pos = borderPoint.withY(y);
-                if (pos.getTypeAt().isSolid()) continue; //Don't mess with solid blocks
-                request.getPlayerEntity().sendBlockChange(pos.toLocation(), Material.STAINED_GLASS, (byte) 14);
-                shownBlocks.add(pos);
-            }
+        for (BlockPos toShow : shownBlocks) {
+            if (toShow.getTypeAt().isSolid()) continue;
+            request.getPlayerEntity().sendBlockChange(toShow.toLocation(), Material.STAINED_GLASS, (byte)14);
         }
         request.getPlayer().setLastShownBlocks(shownBlocks);
+        set(null);
     }
 
     private final Map<Region, Collection<BlockPos>> borderCache = Maps.newHashMap(); //Will only be accessed by a single task, so no need for synchronization

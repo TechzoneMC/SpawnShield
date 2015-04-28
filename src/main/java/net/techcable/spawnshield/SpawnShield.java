@@ -92,9 +92,7 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
             case FORCEFIELD :
                 Utils.warning("Force field mode is currently unsupported");
                 this.forceFieldListener = new ForceFieldListener();
-                registerListener(new ForceFieldListener());
-                forceFieldUpdateTask = new ForceFieldUpdateTask();
-                forceFieldUpdateTask.runTaskTimerAsynchronously(this, 0, 1); //Every single tick
+                registerListener(forceFieldListener);
                 break;
             case TELEPORT :
                 teleportSafezoningTask = new TeleportSafezoningTask();

@@ -24,6 +24,7 @@
  */
 package net.techcable.spawnshield.forcefield;
 
+import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldedit.BlockVector2D;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import lombok.Getter;
@@ -63,6 +64,19 @@ public class ProtectedRegionRegion implements Region {
             points.add(new BlockPos(rawPoint.getBlockX(), y, rawPoint.getBlockZ(), world));
         }
         return points;
+    }
+
+    @Override
+    public BlockPos getMin() {
+        BlockVector min = handle.getMinimumPoint();
+        return new BlockPos(min.getBlockX(), min.getBlockY(), min.getBlockZ(), getWorld());
+    }
+
+
+    @Override
+    public BlockPos getMax() {
+        BlockVector max = handle.getMaximumPoint();
+        return new BlockPos(max.getBlockX(), max.getBlockY(), max.getBlockZ(), getWorld());
     }
 
     @Override

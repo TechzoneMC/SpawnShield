@@ -34,7 +34,7 @@ import lombok.*;
 
 @RequiredArgsConstructor
 @Getter
-@EqualsAndHashCode
+@EqualsAndHashCode(of = {"x", "y", "z", "world"})
 public class BlockPos {
 
     public BlockPos(Location l) {
@@ -50,7 +50,7 @@ public class BlockPos {
     }
 
     public int distanceSquared(BlockPos other) {
-        Preconditions.checkArgument(!other.getWorld().equals(getWorld()), "Can't compare the distances of different worlds");
+        Preconditions.checkArgument(other.getWorld().equals(getWorld()), "Can't compare the distances of different worlds");
         return square(x - other.x) + square(y - other.y) + square(z - other.z);
     }
 
