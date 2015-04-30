@@ -62,20 +62,4 @@ public class SpawnShieldPlayer extends TechPlayer {
     private Location lastLocationOutsideSafezone = null;
     private long lastCantEnterMessageTime = -1;
     private Collection<BlockPos> lastShownBlocks; //The forcefield blocks last shown to this player
-    /**
-     * OMG, there can only be one update request at a time, why did you do that Techcable?
-     * I did it because PlayerMoveEvents are triggered by packets, which could be fired multiple times a tick
-     * If there were 30 entries in the theoretical queue, then the ForceFieldUpdateTask would have to do a lot of work every tick.
-     * This ensures that each player only has one forcefieldupdate a tick
-     */
-    @Setter(AccessLevel.NONE)
-    private volatile ForceFieldUpdateRequest updateRequest;
-
-    private final Object forceFieldUpdateLock = new Object();
-    @Synchronized("forceFieldUpdateLock")
-    public void updateForceField(ForceFieldUpdateRequest request) {
-       if (updateRequest == null || updateRequest.isCompleted()) {
-           updateRequest = request;
-       }
-    }
 }

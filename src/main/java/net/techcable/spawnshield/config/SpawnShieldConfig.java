@@ -126,6 +126,11 @@ public class SpawnShieldConfig extends Config {
     })
     private boolean debug = false;
 
+    @Comments(
+            "The range in which players will see a forcefield"
+    )
+    private int forcefieldRange = 50;
+
     @Synchronized("lock")
     public void refreshRegionsToBlock() {
         this.cachedRegionsToBlock = null;

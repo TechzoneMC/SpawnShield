@@ -60,7 +60,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 
 public class ForceFieldListener implements Listener {
-    public static final int DEFAULT_UPDATE_RADIUS = 20;
     private final Set<UUID> currentlyProcessing = Sets.newSetFromMap(Maps.<UUID, Boolean>newConcurrentMap());
     @EventHandler(priority = EventPriority.MONITOR)
     public void onMove(PlayerMoveEvent event) {
@@ -91,7 +90,7 @@ public class ForceFieldListener implements Listener {
             ProtectedRegionRegion region = new ProtectedRegionRegion(wgRegion.getSecond(), wgRegion.getFirst());
             toUpdate.add(region);
         }
-        ForceFieldUpdateRequest request = new ForceFieldUpdateRequest(pos, toUpdate, player, DEFAULT_UPDATE_RADIUS);
+        ForceFieldUpdateRequest request = new ForceFieldUpdateRequest(pos, toUpdate, player, SpawnShield.getInstance().getSettings().getForcefieldRange());
         final ForceFieldUpdateTask task = new ForceFieldUpdateTask(request);
         Bukkit.getScheduler().runTaskAsynchronously(SpawnShield.getInstance(), task);
         task.addListener(new Runnable() {
@@ -99,7 +98,7 @@ public class ForceFieldListener implements Listener {
             public void run() {
                 currentlyProcessing.remove(player.getId());
             }
-        }, MoreExecutors.sameThreadExecutor());;
+        }, MoreExecutors.sameThreadExecutor());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
