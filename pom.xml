@@ -5,13 +5,9 @@
         <artifactId>parent</artifactId>
         <version>1.0.3</version>
     </parent>
-    <properties>
-        <license.url>https://gist.githubusercontent.com/Techcable/ea146b481870e3736b48/raw/56694d13f0da411c799ae990f50c924383386e82/License.md</license.url>
-        <license.name>Techcable's License</license.name>
-    </properties>
     <artifactId>spawnshield</artifactId>
     <name>SpawnShield</name>
-    <version>0.1.0</version>
+    <version>1.0.1</version>
     <description>Prevents people from entering spawn in combat</description>
     <repositories>
         <repository>
@@ -76,6 +72,7 @@
         </dependency>
     </dependencies>
     <build>
+        <finalName>SpawnShield</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -89,7 +86,6 @@
                         </goals>
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <finalName>SpawnShield-shaded</finalName> <!-- Obfuscation creates final jar -->
                             <relocations>
                                 <relocation>
                                     <pattern>net.techcable.techutils</pattern>
@@ -103,35 +99,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <!-- Obfuscate -->
-                <groupId>com.github.wvengen</groupId>
-                <artifactId>proguard-maven-plugin</artifactId>
-                <version>2.0.8</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>net.sf.proguard</groupId>
-                        <artifactId>proguard-base</artifactId>
-                        <version>5.0</version>
-                    </dependency>
-                </dependencies>
-                <executions>
-                   <execution>
-                       <phase>package</phase>
-                       <goals>
-                           <goal>proguard</goal>
-                       </goals>
-                   </execution>
-                </executions>
-                <configuration>
-                    <injar>SpawnShield-shaded.jar</injar>
-                    <outjar>SpawnShield.jar</outjar>
-                    <proguardVersion>5.0</proguardVersion>
-                    <libs>
-                        <lib>${java.home}/lib/rt.jar</lib>
-                    </libs>
-                </configuration>
             </plugin>
         </plugins>
     </build>

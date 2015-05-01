@@ -1,5 +1,5 @@
 name: "SpawnShield"
-version: 0.1.0
+version: 1.0.1
 main: net.techcable.spawnshield.SpawnShield
 authors:
   - Techcable
