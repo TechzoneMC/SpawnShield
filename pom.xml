@@ -5,9 +5,11 @@
         <artifactId>parent</artifactId>
         <version>1.0.3</version>
     </parent>
-    <artifactId>spawnshield</artifactId>
+    <groupId>net.techcable.spawnshield</groupId>
+    <artifactId>parent</artifactId>
+    <packaging>pom</packaging>
     <name>SpawnShield</name>
-    <version>1.0.1</version>
+    <version>1.1.0-SNAPSHOT</version>
     <description>Prevents people from entering spawn in combat</description>
     <repositories>
         <repository>
@@ -23,52 +25,17 @@
             <url>http://maven.elmakers.com/repository/</url>
         </repository>
     </repositories>
+    <modules>
+        <module>api</module>
+        <module>base</module>
+        <module>worldguard6</module>
+    </modules>
     <dependencies>
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
             <version>1.8.3-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.sk89q</groupId>
-            <artifactId>worldguard</artifactId>
-            <version>6.0.0-SNAPSHOT</version>
-            <scope>provided</scope>
-            <exclusions>
-                <!-- WorldGuard has a custom version of bukkit that i don't wanna deal with -->
-                <exclusion>
-                    <groupId>com.sk89q.spigot</groupId>
-                    <artifactId>bukkit</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>net.techcable</groupId>
-            <artifactId>techutils</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.trc202</groupId>
-            <artifactId>combattag</artifactId>
-            <version>6.4.0</version>
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>net.techcable</groupId>
-            <artifactId>combattag</artifactId>
-            <version>1.0.13-SNAPSHOT</version>
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>PvPManager</groupId>
-            <artifactId>PvPManager</artifactId>
-            <version>2.4.7</version>
-            <scope>provided</scope>
-            <optional>true</optional>
         </dependency>
     </dependencies>
     <build>
