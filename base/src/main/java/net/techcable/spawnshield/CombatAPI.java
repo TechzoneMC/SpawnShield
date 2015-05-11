@@ -34,6 +34,15 @@ import com.trc202.CombatTagApi.CombatTagApi;
 
 import techcable.minecraft.combattag.CombatTagAPI;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.UUID;
+
+import net.techcable.techutils.Reflection;
+
+import static net.techcable.techutils.Reflection.*;
+
 /**
  * API to interface with Combat Tag, Combat Tag Reloaded, and PvPManager
  * 
@@ -53,6 +62,8 @@ public class CombatAPI {
             return CombatTagAPI.isTagged(player);
         } else if (hasPvpManager()) {
             return getPlayerHandler().get(player).isInCombat();
+        } else if (hasCombatTagPlus()) {
+            return getRemainingTagTime(player) < 1;
         } else {
             return false;
         }
@@ -76,10 +87,19 @@ public class CombatAPI {
             long timeLeft = (System.currentTimeMillis() - getPlayerHandler().get(player).getTaggedTime()) - Variables.timeInCombat * 1000; //Very Hacky -- PvPManager doesn't have a public api
             if (timeLeft < 1) return -1; //Not tagged
             return timeLeft;
+        } else if (hasCombatTagPlus()){
+            Object tag = getTag(player.getUniqueId());
+            if (getTagDurationMethod == null) {
+                getTagDurationMethod = makeMethod(Reflection.getClass("net.minelink.ctplus.Tag"), "getTagDuration");
+            }
+            int timeLeft = callMethod(getTagDurationMethod, tag);
+            if (timeLeft < 1) return -1;
+            return timeLeft * 1000;
         } else {
-            return -2; //Not installed
+            return -2;
         }
     }
+    private Method getTagDurationMethod;
 
     /**
      * Checks if an entity is a NPC
@@ -91,10 +111,20 @@ public class CombatAPI {
             return getCombatTagApi().isNPC(entity);
         } else if (hasCombatTagReloaded()) {
             return CombatTagAPI.isNPC(entity);
+        } else if (hasCombatTagPlus()) {
+            if (isNpcMethod == null) {
+                isNpcMethod = makeMethod(Reflection.getClass("net.minelink.ctplus.compat.api.NpcPlayerHelper"), "isNpc", Player.class);
+            }
+            if (entity instanceof Player) {
+                return callMethod(isNpcMethod, getNpcPlayerHelper(), (Player)entity);
+            } else {
+                return false;
+            }
         } else {
             return false; //Not installed or PvPManager
         }
     }
+    private static Method isNpcMethod;
     
     /**
      * Tag this player
@@ -107,8 +137,14 @@ public class CombatAPI {
             CombatTagAPI.addTagged(player);
         } else if (hasPvpManager()) {
             getPlayerHandler().tag(getPlayerHandler().get(player));
+        } else if (hasCombatTagPlus()) {
+            if (tagMethod == null) {
+                tagMethod = makeMethod(Reflection.getClass("net.minelink.ctplus.TagManager"), Player.class, Player.class);
+            }
+            callMethod(tagMethod, getTagManager(), player, null); //Will probably work
         }
     }
+    private static Constructor tagMethod;
     
     /**
      * UnTag this player
@@ -120,9 +156,15 @@ public class CombatAPI {
         } else if (hasCombatTagReloaded()) {
             CombatTagAPI.removeTagged(player);
         } else if (hasPvpManager()) {
-             getPlayerHandler().untag(getPlayerHandler().get(player));
+            getPlayerHandler().untag(getPlayerHandler().get(player));
+        } else if (hasCombatTagPlus()) {
+            if (untagMethod == null) {
+                untagMethod = makeMethod(Reflection.getClass("net.minelink.ctplus.TagManager"), "untag", UUID.class);
+            }
+            callMethod(untagMethod, getTagManager(), player.getUniqueId());
         }
     }
+    private static Method untagMethod;
     
     /**
      * Return wether a combat-tagging plugin is installed
@@ -130,10 +172,37 @@ public class CombatAPI {
      * @return true if a combat tag plugin is installed
      */
     public static boolean isInstalled() {
-        return hasCombatTag() || hasCombatTagReloaded() || hasPvpManager();
+        return hasCombatTag() || hasCombatTagReloaded() || hasPvpManager() || hasCombatTagPlus();
     }
     
     //Internal
+    
+    private static Method getNpcPlayerHelperMethod;
+    private static Object getNpcPlayerHelper() {
+        Object plugin = Bukkit.getPluginManager().getPlugin("CombatTagPlus");
+        if (getNpcPlayerHelperMethod == null) {
+            getNpcPlayerHelperMethod = makeMethod(Reflection.getClass("net.minelink.ctplus.CombatTagPlus"), "getNpcPlayerHelper");
+        }
+        return callMethod(getNpcPlayerHelperMethod, plugin);
+    }
+    
+    private static Method getTagManagerMethod;
+    private static Object getTagManager() {
+        Object plugin = Bukkit.getPluginManager().getPlugin("CombatTagPlus");
+        if (getTagManagerMethod == null) {
+            getTagManagerMethod = makeMethod(Reflection.getClass("net.minelink.ctplus.CombatTagPlus"), "getTagManager");
+        }
+        return callMethod(getTagManagerMethod, plugin);
+    }
+    public static Object getTag(UUID playerId) {
+        Object tagManger = getTagManager();
+        if (getTagMethod == null) {
+            getTagMethod = makeMethod(Reflection.getClass("net.minelink.ctplus.TagManager"), "getTag", UUID.class);
+        }
+        return callMethod(getTagMethod, tagManager, playerId);
+    }
+    private static Method getTagMethod;
+    
     private static PlayerHandler getPlayerHandler() {
         PvPManager plugin = (PvPManager) Bukkit.getPluginManager().getPlugin("PvPManager");
         return plugin.getPlayerHandler();
@@ -147,6 +216,9 @@ public class CombatAPI {
     }
     private static boolean hasPvpManager() {
         return Bukkit.getPluginManager().getPlugin("PvPManager") != null;
+    }
+    private static boolean hasCombatTagPlus() {
+        return Bukkit.getPluginManager().getPlugin("CombatTagPlus") != null;
     }
     
     private static CombatTagApi combatTagApi;
