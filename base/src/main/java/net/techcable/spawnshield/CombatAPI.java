@@ -22,9 +22,6 @@
  */
 package net.techcable.spawnshield;
 
-import me.NoChance.PvPManager.Config.Variables;
-import me.NoChance.PvPManager.Managers.PlayerHandler;
-import me.NoChance.PvPManager.PvPManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -32,6 +29,7 @@ import org.bukkit.entity.Player;
 import com.trc202.CombatTag.CombatTag;
 import com.trc202.CombatTagApi.CombatTagApi;
 
+import org.bukkit.plugin.Plugin;
 import techcable.minecraft.combattag.CombatTagAPI;
 
 import java.lang.reflect.Constructor;
@@ -58,16 +56,18 @@ public class CombatAPI {
     public static boolean isTagged(Player player) {
         if (hasCombatTag()) {
             return getCombatTagApi().isInCombat(player);
-        } else if (hasCombatTagReloaded()) {
-            return CombatTagAPI.isTagged(player);
         } else if (hasPvpManager()) {
-            return getPlayerHandler().get(player).isInCombat();
+            if (isInCombatMethod == null) {
+                isInCombatMethod = makeMethod(Reflection.getClass("me.NoChance.PvPManager.PvPlayer"), "isInCombat");
+            }
+            return callMethod(isInCombatMethod, getPvpPlayer(player));
         } else if (hasCombatTagPlus()) {
             return getRemainingTagTime(player) < 1;
         } else {
             return false;
         }
     }
+    private static Method isInCombatMethod;
     
     /**
      * Returns the time a player has left in combat
@@ -81,10 +81,16 @@ public class CombatAPI {
     public static long getRemainingTagTime(Player player) {
         if (hasCombatTag()) {
             return getCombatTagApi().getRemainingTagTime(player);
-        } else if (hasCombatTagReloaded()) {
-            return CombatTagAPI.getRemainingTagTime(player);
         } else if (hasPvpManager()) {
-            long timeLeft = (System.currentTimeMillis() - getPlayerHandler().get(player).getTaggedTime()) - Variables.timeInCombat * 1000; //Very Hacky -- PvPManager doesn't have a public api
+            if (getTaggedTimeMethod == null) {
+                getTaggedTimeMethod = makeMethod(Reflection.getClass("me.NoChance.PvPManager.PvPlayer"), "getTaggedTime");
+            }
+            long taggedTime = callMethod(getTaggedTimeMethod, getPvpPlayer(player));
+            if (timeInCombatField == null) {
+                timeInCombatField = makeField(Reflection.getClass("me.NoChance.PvPManager.Config.Variables"), "timeInCombat");
+            }
+            long timeInCombat = getField(timeInCombatField, null);
+            long timeLeft = (System.currentTimeMillis() - taggedTime) - timeInCombat * 1000; //Very Hacky -- PvPManager doesn't have a public api
             if (timeLeft < 1) return -1; //Not tagged
             return timeLeft;
         } else if (hasCombatTagPlus()){
@@ -99,7 +105,9 @@ public class CombatAPI {
             return -2;
         }
     }
-    private Method getTagDurationMethod;
+    private static Field timeInCombatField;
+    private static Method getTaggedTimeMethod;
+    private static Method getTagDurationMethod;
 
     /**
      * Checks if an entity is a NPC
@@ -109,8 +117,6 @@ public class CombatAPI {
     public static boolean isNPC(Entity entity) {
         if (hasCombatTag()) {
             return getCombatTagApi().isNPC(entity);
-        } else if (hasCombatTagReloaded()) {
-            return CombatTagAPI.isNPC(entity);
         } else if (hasCombatTagPlus()) {
             if (isNpcMethod == null) {
                 isNpcMethod = makeMethod(Reflection.getClass("net.minelink.ctplus.compat.api.NpcPlayerHelper"), "isNpc", Player.class);
@@ -133,18 +139,20 @@ public class CombatAPI {
     public static void tag(Player player) {
         if (hasCombatTag()) {
             getCombatTagApi().tagPlayer(player);
-        } else if (hasCombatTagReloaded()) {
-            CombatTagAPI.addTagged(player);
         } else if (hasPvpManager()) {
-            getPlayerHandler().tag(getPlayerHandler().get(player));
+            if (playerHandlerTagMethod == null) {
+                playerHandlerTagMethod = makeMethod(Reflection.getClass("me.NoChance.PvPManager.Managers.PlayerHandler"), "tag", Reflection.getClass("me.NoChance.PvPManager.PvPlayer"));
+            }
+            callMethod(playerHandlerTagMethod, getPlayerHandler(), getPvpPlayer(player));
         } else if (hasCombatTagPlus()) {
             if (tagMethod == null) {
-                tagMethod = makeMethod(Reflection.getClass("net.minelink.ctplus.TagManager"), Player.class, Player.class);
+                tagMethod = makeMethod(Reflection.getClass("net.minelink.ctplus.TagManager"), "tag", Player.class, Player.class);
             }
             callMethod(tagMethod, getTagManager(), player, null); //Will probably work
         }
     }
-    private static Constructor tagMethod;
+    private static Method tagMethod;
+    private static Method playerHandlerTagMethod;
     
     /**
      * UnTag this player
@@ -153,10 +161,11 @@ public class CombatAPI {
     public static void unTag(Player player) {
         if (hasCombatTag()) {
             getCombatTagApi().untagPlayer(player);
-        } else if (hasCombatTagReloaded()) {
-            CombatTagAPI.removeTagged(player);
         } else if (hasPvpManager()) {
-            getPlayerHandler().untag(getPlayerHandler().get(player));
+            if (playerHandlerUntagMethod == null) {
+                playerHandlerUntagMethod = makeMethod(Reflection.getClass("me.NoChance.PvPManager.Managers.PlayerHandler"), "untag", Reflection.getClass("me.NoChance.PvPManager.PvPlayer"));
+            }
+            callMethod(playerHandlerUntagMethod, getPlayerHandler(), getPvpPlayer(player));
         } else if (hasCombatTagPlus()) {
             if (untagMethod == null) {
                 untagMethod = makeMethod(Reflection.getClass("net.minelink.ctplus.TagManager"), "untag", UUID.class);
@@ -165,14 +174,15 @@ public class CombatAPI {
         }
     }
     private static Method untagMethod;
-    
+    private static Method playerHandlerUntagMethod;
+
     /**
      * Return wether a combat-tagging plugin is installed
      * Only CombatTag, CombatTagReloaded, and PvPManager are currently supported
      * @return true if a combat tag plugin is installed
      */
     public static boolean isInstalled() {
-        return hasCombatTag() || hasCombatTagReloaded() || hasPvpManager() || hasCombatTagPlus();
+        return hasCombatTag() || hasPvpManager() || hasCombatTagPlus();
     }
     
     //Internal
@@ -195,24 +205,33 @@ public class CombatAPI {
         return callMethod(getTagManagerMethod, plugin);
     }
     public static Object getTag(UUID playerId) {
-        Object tagManger = getTagManager();
+        Object tagManager = getTagManager();
         if (getTagMethod == null) {
             getTagMethod = makeMethod(Reflection.getClass("net.minelink.ctplus.TagManager"), "getTag", UUID.class);
         }
         return callMethod(getTagMethod, tagManager, playerId);
     }
     private static Method getTagMethod;
-    
-    private static PlayerHandler getPlayerHandler() {
-        PvPManager plugin = (PvPManager) Bukkit.getPluginManager().getPlugin("PvPManager");
-        return plugin.getPlayerHandler();
+
+    private static Object getPlayerHandler() {
+        Plugin plugin = Bukkit.getPluginManager().getPlugin("PvPManager");
+        if (getPlayerHandlerMethod == null) {
+            getPlayerHandlerMethod = makeMethod(Reflection.getClass("me.NoChance.PvPManager.PvPManager"), "getPlayerHandler");
+        }
+        return callMethod(getPlayerHandlerMethod, plugin);
     }
-    
+    private static Method getPlayerHandlerMethod;
+
+    private static Object getPvpPlayer(Player player) {
+        if (playerHandlerGetMethod == null) {
+            playerHandlerGetMethod = makeMethod(Reflection.getClass("me.NoChance.PvPManager.Managers.PlayerHandler"), "get", Player.class);
+        }
+        return callMethod(playerHandlerGetMethod, getPlayerHandler(), player);
+    }
+    private static Method playerHandlerGetMethod;
+
     private static boolean hasCombatTag() {
         return Bukkit.getPluginManager().getPlugin("CombatTag") != null;
-    }
-    private static boolean hasCombatTagReloaded() {
-        return Bukkit.getPluginManager().getPlugin("CombatTagReloaded") != null;
     }
     private static boolean hasPvpManager() {
         return Bukkit.getPluginManager().getPlugin("PvPManager") != null;

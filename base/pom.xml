@@ -20,20 +20,6 @@
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>net.techcable</groupId>
-            <artifactId>combattag</artifactId>
-            <version>1.0.13-SNAPSHOT</version>
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>PvPManager</groupId>
-            <artifactId>PvPManager</artifactId>
-            <version>2.4.7</version>
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
         <!-- Compatibility -->
         <dependency>
             <groupId>net.techcable.spawnshield</groupId>
