@@ -16,7 +16,7 @@
         <dependency>
             <groupId>com.trc202</groupId>
             <artifactId>combattag</artifactId>
-            <version>6.4.0</version>
+            <version>6.4.1-SNAPSHOT</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
