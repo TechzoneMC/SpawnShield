@@ -25,8 +25,9 @@ package net.techcable.spawnshield.forcefield;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import net.techcable.spawnshield.BlockPos;
 import net.techcable.spawnshield.SpawnShieldPlayer;
+import net.techcable.spawnshield.compat.BlockPos;
+import net.techcable.spawnshield.compat.Region;
 import org.bukkit.entity.Player;
 
 import java.util.Collection;

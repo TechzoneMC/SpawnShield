@@ -22,10 +22,8 @@
  */
 package net.techcable.spawnshield;
 
-import com.sk89q.worldguard.bukkit.WGBukkit;
-import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import net.techcable.techutils.collect.Pair;
+import net.techcable.spawnshield.compat.ProtectionPlugin;
+import net.techcable.spawnshield.compat.Region;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -73,14 +71,17 @@ public class SpawnShieldExecutor implements CommandExecutor {
                     sender.sendMessage("World " + worldName + " is not known");
                     return true;
                 }
-                RegionManager manager = WGBukkit.getRegionManager(world);
-                if (!manager.hasRegion(regionName)) {
-                    sender.sendMessage(regionName + " is not a known region");
-                    return true;
+                boolean hasRegion = false;
+                for (ProtectionPlugin plugin : SpawnShield.getInstance().getSettings().getPlugins()) {
+                    if (!plugin.hasRegion(world, regionName)) continue;;
+                    hasRegion = true;
+                    Region region = plugin.getRegion(world, regionName);
+                    SpawnShield.getInstance().getSettings().addRegionToBlock(region);
+                    sender.sendMessage("Successfuly blocked region " + regionName + " in " + worldName);
                 }
-                ProtectedRegion region = manager.getRegion(regionName);
-                SpawnShield.getInstance().getSettings().addRegionToBlock(region);
-                sender.sendMessage("Successfuly blocked region " + regionName + " in " + worldName);
+                if (!hasRegion) {
+                    sender.sendMessage("Region not found");
+                }
                 return true;
             } else if (subSubCommand.equalsIgnoreCase("remove")) {
                 if (args.length < 4) {
@@ -95,19 +96,23 @@ public class SpawnShieldExecutor implements CommandExecutor {
                     sender.sendMessage("World " + worldName + " is not known");
                     return true;
                 }
-                RegionManager manager = WGBukkit.getRegionManager(world);
-                if (!manager.hasRegion(regionName)) {
-                    sender.sendMessage(regionName + " is not a known region");
-                    return true;
+                boolean hasRegion = false;
+                for (ProtectionPlugin plugin : SpawnShield.getInstance().getSettings().getPlugins()) {
+                    if (!plugin.hasRegion(world, regionName)) continue;;
+                    hasRegion = true;
+                    Region region = plugin.getRegion(world, regionName);
+                    SpawnShield.getInstance().getSettings().addRegionToBlock(region);
                 }
-                ProtectedRegion region = manager.getRegion(regionName);
-                SpawnShield.getInstance().getSettings().removeRegionToBlock(region);
-                sender.sendMessage("Successfuly unblocked region " + regionName + " in " + worldName);
+                if (hasRegion) {
+                    sender.sendMessage("Successfuly unblocked region " + regionName + " in " + worldName);
+                } else {
+                    sender.sendMessage("Unknown region");
+                }
                 return true;
             } else if (subSubCommand.equalsIgnoreCase("list")) {
                 sender.sendMessage(color("&b Blocked Regions"));
-                for (Pair<World, ProtectedRegion> region : SpawnShield.getInstance().getSettings().getRegionsToBlock()) {
-                    sender.sendMessage("&7Region&r " + region.getSecond().getId() + " &7in world&r " + region.getFirst().getName());
+                for (Region region : SpawnShield.getInstance().getSettings().getRegionsToBlock()) {
+                    sender.sendMessage("&7Region&r " + region.getName() + " &7in world&r " + region.getWorld().getName());
                 }
                 return true;
             } else {

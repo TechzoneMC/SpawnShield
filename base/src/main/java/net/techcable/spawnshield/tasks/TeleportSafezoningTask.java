@@ -22,11 +22,11 @@
  */
 package net.techcable.spawnshield.tasks;
 
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import net.techcable.combattag.Utils;
 import net.techcable.spawnshield.CombatAPI;
 import net.techcable.spawnshield.SpawnShield;
 import net.techcable.spawnshield.SpawnShieldPlayer;
+import net.techcable.spawnshield.Utils;
+import net.techcable.spawnshield.compat.Region;
 import net.techcable.spawnshield.config.SpawnShieldMessages;
 import net.techcable.techutils.collect.Pair;
 import org.bukkit.Bukkit;
@@ -61,8 +61,8 @@ public class TeleportSafezoningTask extends BukkitRunnable {
     }
 
     public boolean isBlocked(Location l) {
-        for (Pair<World, ProtectedRegion> r : SpawnShield.getInstance().getSettings().getRegionsToBlock()) {
-            if (r.getSecond().contains(l.getBlockX(), l.getBlockY(), l.getBlockZ())) return true;
+        for (Region r : SpawnShield.getInstance().getSettings().getRegionsToBlock()) {
+            if (r.contains(l.getBlockX(), l.getBlockY(), l.getBlockZ())) return true;
         }
         return false;
     }

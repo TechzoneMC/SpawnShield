@@ -30,9 +30,7 @@ import com.trc202.CombatTag.CombatTag;
 import com.trc202.CombatTagApi.CombatTagApi;
 
 import org.bukkit.plugin.Plugin;
-import techcable.minecraft.combattag.CombatTagAPI;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.UUID;

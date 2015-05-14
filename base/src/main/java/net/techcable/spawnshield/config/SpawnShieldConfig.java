@@ -25,15 +25,14 @@ package net.techcable.spawnshield.config;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.sk89q.worldguard.bukkit.WGBukkit;
-import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Synchronized;
 import net.techcable.spawnshield.BlockMode;
 import net.techcable.spawnshield.SpawnShield;
 import net.techcable.spawnshield.Utils;
+import net.techcable.spawnshield.compat.ProtectionPlugin;
+import net.techcable.spawnshield.compat.Region;
 import net.techcable.techutils.collect.Pair;
 import net.techcable.techutils.yamler.Comments;
 import net.techcable.techutils.yamler.Config;
@@ -44,6 +43,7 @@ import org.bukkit.World;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -92,20 +92,20 @@ public class SpawnShieldConfig extends Config {
         }
     }
 
-    public void addRegionToBlock(ProtectedRegion r) {
+    public void addRegionToBlock(Region r) {
         Utils.assertMainThread();
-        blockRegions.add(r.getId());
+        blockRegions.add(r.getName());
         refreshRegionsToBlock();
     }
 
-    public void removeRegionToBlock(ProtectedRegion r) {
+    public void removeRegionToBlock(Region r) {
         Utils.assertMainThread();
-        blockRegions.remove(r.getId());
+        blockRegions.remove(r.getName());
         refreshRegionsToBlock();
     }
 
     @Comments({
-            "The list of worldedit regions to block entry into in combat",
+            "The list of regions to block entry into in combat",
             "This option can be controlled by the command /spawnshield block command",
             "Please use the command to edit this option, as it checks for errors when you add them"
     })
@@ -135,31 +135,40 @@ public class SpawnShieldConfig extends Config {
     }
 
     @Getter(AccessLevel.NONE)
-    private transient Set<Pair<World, ProtectedRegion>> cachedRegionsToBlock;
+    private transient Set<Region> cachedRegionsToBlock;
 
+    @Synchronized("lock")
+    public void addProtectionPlugin(ProtectionPlugin plugin) {
+        plugins.add(plugin);
+    }
+
+    private final Set<ProtectionPlugin> plugins = new HashSet<>();
     /**
      * Why not let the @Synchronised annotation create the lock for me?
      * Because AFAIK, it isn't transient, causing it to be serialized to config
      */
     private final transient Object lock = new Object();
-    @Synchronized("lock")
-    public Collection<Pair<World, ProtectedRegion>> getRegionsToBlock() {
+    public Collection<Region> getRegionsToBlock() { // A devious combination of double checked locking and lazy initialization
         if (cachedRegionsToBlock != null) return cachedRegionsToBlock;
-        cachedRegionsToBlock = Sets.newSetFromMap(new ConcurrentHashMap<Pair<World, ProtectedRegion>, Boolean>());
-        Set<String> notFound = Sets.newHashSet(blockRegions);
-        for (World world : Bukkit.getWorlds()) {
-            RegionManager manager = WGBukkit.getRegionManager(world);
-            for (String regionName : blockRegions) {
-                if (!manager.hasRegion(regionName)) continue;
-                ProtectedRegion region = manager.getRegion(regionName);
-                notFound.remove(regionName); //We found it !!
-                cachedRegionsToBlock.add(new Pair<World, ProtectedRegion>(world, region));
+        synchronized (lock) {
+            if (cachedRegionsToBlock != null) return cachedRegionsToBlock;
+            cachedRegionsToBlock = Sets.newSetFromMap(new ConcurrentHashMap<Region, Boolean>());
+            Set<String> notFound = Sets.newHashSet(blockRegions);
+            for (ProtectionPlugin plugin : plugins) {
+                for (World world : Bukkit.getWorlds()) {
+                    for (String regionName : blockRegions) {
+                        if (!plugin.hasRegion(world, regionName)) continue;
+                        Region region = plugin.getRegion(world, regionName);
+                        notFound.remove(regionName); //We found it !!
+                        cachedRegionsToBlock.add(region);
+                    }
+                }
             }
+            //Warn if we couldn't find a worldguard region
+            for (String regionName : notFound) {
+                Utils.warning(regionName + " is not a known region");
+            }
+            return cachedRegionsToBlock;
         }
-        //Warn if we couldn't find a worldguard region
-        for (String regionName : notFound) {
-            Utils.warning(regionName + " is not a known region");
-        }
-        return cachedRegionsToBlock;
     }
 }

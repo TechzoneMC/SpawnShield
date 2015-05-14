@@ -20,34 +20,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.techcable.spawnshield;
+package net.techcable.spawnshield.compat;
 
-import lombok.Getter;
-import lombok.Setter;
-import net.techcable.spawnshield.compat.BlockPos;
-import net.techcable.techutils.entity.TechPlayer;
-import org.bukkit.Location;
+import org.bukkit.World;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.UUID;
-
-@Getter
-@Setter
-public class SpawnShieldPlayer extends TechPlayer {
-
-    public SpawnShieldPlayer(UUID id, SpawnShield plugin) {
-        super(id, plugin);
-    }
-
-    @Override
-    public SpawnShield getPlugin() {
-        return (SpawnShield) super.getPlugin();
-    }
-
-
-    private boolean forcefielded = false;
-    private Location lastLocationOutsideSafezone = null;
-    private long lastCantEnterMessageTime = -1;
-    private Collection<BlockPos> lastShownBlocks; //The forcefield blocks last shown to this player
+public interface ProtectionPlugin {
+    public Region getRegion(World world, String name);
+    public boolean hasRegion(World world, String name);
 }

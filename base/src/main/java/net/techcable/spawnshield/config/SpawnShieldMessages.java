@@ -23,12 +23,6 @@
 package net.techcable.spawnshield.config;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.Sets;
-import com.sk89q.worldguard.bukkit.WGBukkit;
-import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import lombok.Getter;
-import net.techcable.spawnshield.BlockMode;
 import net.techcable.spawnshield.SpawnShield;
 import net.techcable.techutils.collect.Pair;
 import net.techcable.techutils.yamler.Comments;

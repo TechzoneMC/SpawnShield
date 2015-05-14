@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.techcable.spawnshield.forcefield;
+package net.techcable.spawnshield.compat.worldguard6;
 
 import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldedit.BlockVector2D;
@@ -30,21 +30,27 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.World;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.lang.ref.WeakReference;
+import java.util.*;
 
 import net.techcable.spawnshield.compat.BlockPos;
 import net.techcable.spawnshield.compat.Region;
 
 @Getter
-@RequiredArgsConstructor
 public class ProtectedRegionRegion implements Region {
     @NonNull
-    private final ProtectedRegion handle;
+    private final WeakReference<ProtectedRegion> handle;
     @NonNull
     private final World world;
+
+    public ProtectedRegion getHandle() {
+        return handle.get();
+    }
+
+    public ProtectedRegionRegion(ProtectedRegion handle, World world) {
+        this.handle = new WeakReference<ProtectedRegion>(handle);
+        this.world = world;
+    }
 
     @Override
     public boolean contains(BlockPos point) {
@@ -53,14 +59,14 @@ public class ProtectedRegionRegion implements Region {
 
     @Override
     public boolean contains(int x, int y, int z) {
-        return handle.contains(x, y, z);
+        return getHandle().contains(x, y, z);
     }
 
     @Override
     public Collection<BlockPos> getPoints() {
-        List<BlockVector2D> rawPoints = handle.getPoints();
+        List<BlockVector2D> rawPoints = getHandle().getPoints();
         Set<BlockPos> points = new HashSet<>();
-        int y = handle.getMinimumPoint().getBlockY(); //Works for me :)
+        int y = getHandle().getMinimumPoint().getBlockY(); //Works for me :)
         for (BlockVector2D rawPoint : rawPoints) {
             points.add(new BlockPos(rawPoint.getBlockX(), y, rawPoint.getBlockZ(), world));
         }
@@ -69,15 +75,20 @@ public class ProtectedRegionRegion implements Region {
 
     @Override
     public BlockPos getMin() {
-        BlockVector min = handle.getMinimumPoint();
+        BlockVector min = getHandle().getMinimumPoint();
         return new BlockPos(min.getBlockX(), min.getBlockY(), min.getBlockZ(), getWorld());
     }
 
 
     @Override
     public BlockPos getMax() {
-        BlockVector max = handle.getMaximumPoint();
+        BlockVector max = getHandle().getMaximumPoint();
         return new BlockPos(max.getBlockX(), max.getBlockY(), max.getBlockZ(), getWorld());
+    }
+
+    @Override
+    public String getName() {
+        return getHandle().getId();
     }
 
     @Override

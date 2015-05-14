@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.techcable.spawnshield.forcefield;
+package net.techcable.spawnshield.compat;
 
 import com.google.common.base.Preconditions;
 import lombok.experimental.Wither;

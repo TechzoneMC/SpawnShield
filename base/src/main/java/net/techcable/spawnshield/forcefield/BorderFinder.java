@@ -29,6 +29,9 @@ package net.techcable.spawnshield.forcefield; /**
  * 2. Any software containing or accessing this class must be available to the public on either dev.bukkit.org or spigotmc.org
  * 3. ALL source code for any piece of software using this class must be given out
  */
+import net.techcable.spawnshield.compat.BlockPos;
+import net.techcable.spawnshield.compat.Region;
+
 import java.util.Collection;
 import java.util.HashSet;
 

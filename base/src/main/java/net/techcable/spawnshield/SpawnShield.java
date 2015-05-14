@@ -23,6 +23,7 @@
 package net.techcable.spawnshield;
 
 import lombok.Getter;
+import net.techcable.spawnshield.compat.worldguard6.WorldGuard6Plugin;
 import net.techcable.spawnshield.config.SpawnShieldConfig;
 import net.techcable.spawnshield.config.SpawnShieldMessages;
 import net.techcable.spawnshield.forcefield.ForceFieldListener;
@@ -30,6 +31,7 @@ import net.techcable.spawnshield.tasks.ForceFieldUpdateTask;
 import net.techcable.spawnshield.tasks.KnockbackTask;
 import net.techcable.spawnshield.tasks.TeleportSafezoningTask;
 import net.techcable.techutils.TechPlugin;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
@@ -84,6 +86,22 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
             metrics.start();
         } catch (IOException e) {
             Utils.warning("Unable to run metrics");
+        }
+        //Add the protection plugins
+        int numPluginsAdded = 0;
+        if (Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
+            String version = Bukkit.getPluginManager().getPlugin("WorldGuard").getDescription().getVersion();
+            if (version.startsWith("6")) {
+                Utils.info("Worldguard 6 Detected, Activatin support");
+                WorldGuard6Plugin hook = new WorldGuard6Plugin();
+                getSettings().addProtectionPlugin(hook);
+                numPluginsAdded++;
+            }
+        }
+        if (numPluginsAdded == 0) {
+            Utils.severe("No supported protection plugin found, shutting down");
+            setEnabled(false);
+            return;
         }
         getCommand("spawnshield").setExecutor(new SpawnShieldExecutor());
         switch (settings.getMode()) {

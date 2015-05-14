@@ -33,4 +33,5 @@ public interface Region {
     public World getWorld();
     public BlockPos getMin();
     public BlockPos getMax();
+    public String getName();
 }

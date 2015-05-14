@@ -22,25 +22,16 @@
  */
 package net.techcable.spawnshield.forcefield;
 
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.JdkFutureAdapters;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.techcable.spawnshield.CombatAPI;
 import net.techcable.spawnshield.SpawnShield;
 import net.techcable.spawnshield.SpawnShieldPlayer;
+import net.techcable.spawnshield.compat.BlockPos;
+import net.techcable.spawnshield.compat.Region;
 import net.techcable.spawnshield.tasks.ForceFieldUpdateTask;
-import net.techcable.techutils.TechScheduler;
-import net.techcable.techutils.collect.Pair;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -48,9 +39,7 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitScheduler;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -83,9 +72,8 @@ public class ForceFieldListener implements Listener {
         currentlyProcessing.add(player.getId());
         BlockPos pos = new BlockPos(player.getEntity().getLocation());
         Collection<Region> toUpdate = new HashSet<>();
-        for (Pair<World, ProtectedRegion> wgRegion : SpawnShield.getInstance().getSettings().getRegionsToBlock()) {
-            if (!wgRegion.getFirst().equals(event.getPlayer().getWorld())) continue; //We dont need this one: Yay!
-            ProtectedRegionRegion region = new ProtectedRegionRegion(wgRegion.getSecond(), wgRegion.getFirst());
+        for (Region region : SpawnShield.getInstance().getSettings().getRegionsToBlock()) {
+            if (!region.getWorld().equals(event.getPlayer().getWorld())) continue; //We dont need this one: Yay!
             toUpdate.add(region);
         }
         ForceFieldUpdateRequest request = new ForceFieldUpdateRequest(pos, toUpdate, player, SpawnShield.getInstance().getSettings().getForcefieldRange());
