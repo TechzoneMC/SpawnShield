@@ -60,11 +60,15 @@ public class BorderFinder {
     private static void getAlongX(BlockPos start, Region region, HashSet<BlockPos> result) {
         if (region.contains(start.getX() + 1, start.getY(), start.getZ())) { //We are positive
             for (int x = start.getX(); region.contains(x, start.getY(), start.getZ()); x++) {
-                result.add(new BlockPos(x, start.getY(), start.getZ(), region.getWorld()));
+                for (int y = region.getMin().getY(); y <= region.getMax().getY(); y++) {
+                    result.add(new BlockPos(x, y, start.getZ(), region.getWorld()));
+                }
             }
         } else { //We are negative or one block
             for (int x = start.getX(); region.contains(x, start.getY(), start.getZ()); x--) {
-                result.add(new BlockPos(x, start.getY(), start.getZ(), region.getWorld()));
+                for (int y = region.getMin().getY(); y <= region.getMax().getY(); y++) {
+                    result.add(new BlockPos(x, y, start.getZ(), region.getWorld()));
+                }
             }
         }
     }
@@ -72,11 +76,15 @@ public class BorderFinder {
     private static void getAlongZ(BlockPos start, Region region, HashSet<BlockPos> result) {
         if (region.contains(start.getX(), start.getY(), start.getZ() + 1)) { //We are positive
             for (int z = start.getZ(); region.contains(start.getX(), start.getY(), z); z++) {
-                result.add(new BlockPos(start.getX(), start.getY(), z, region.getWorld()));
+                for (int y = region.getMin().getY(); y <= region.getMax().getY(); y++) {
+                    result.add(new BlockPos(start.getX(), y, z, region.getWorld()));
+                }
             }
         } else { //We are negative or one block
             for (int z = start.getZ(); region.contains(start.getX(), start.getY(), z); z--) {
-                result.add(new BlockPos(start.getX(), start.getY(), z, region.getWorld()));
+                for (int y = region.getMin().getY(); y <= region.getMax().getY(); y++) {
+                    result.add(new BlockPos(start.getX(), y, z, region.getWorld()));
+                }
             }
         }
     }

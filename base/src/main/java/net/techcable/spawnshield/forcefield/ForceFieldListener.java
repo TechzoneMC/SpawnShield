@@ -52,27 +52,21 @@ public class ForceFieldListener implements Listener {
         if (event.getFrom().equals(event.getTo())) return; //Don't wanna fire if the player turned his head
         final SpawnShieldPlayer player = SpawnShield.getInstance().getPlayer(event.getPlayer());
         if (!CombatAPI.isTagged(event.getPlayer())) {
+            SpawnShield.getInstance().clearRequest(event.getPlayer().getUniqueId());
             if (player.getLastShownBlocks() != null) {
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        player.lockLastShownBlocksRead();
-                        try {
+                if (player.getLastShownBlocks() != null) {
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
                             if (player.getLastShownBlocks() == null) return;
                             for (BlockPos lastShown : player.getLastShownBlocks()) {
                                 player.getEntity().sendBlockChange(lastShown.toLocation(), lastShown.getTypeAt(), lastShown.getDataAt());
                             }
-                            player.lockLastShownBlocksWrite();
-                            try {
-                                player.setLastShownBlocks(null);
-                            } finally {
-                                player.unlockLastShownBlocksWrite();
-                            }
-                        } finally {
-                            player.unlockLastShownBlocksRead();
+                            player.setLastShownBlocks(null);
                         }
-                    }
-                }.runTaskAsynchronously(SpawnShield.getInstance());
+                    }.runTaskAsynchronously(SpawnShield.getInstance());
+                }
+                return;
             }
             return;
         }

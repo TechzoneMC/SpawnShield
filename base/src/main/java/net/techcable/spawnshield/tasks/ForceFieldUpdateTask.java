@@ -22,35 +22,25 @@
  */
 package net.techcable.spawnshield.tasks;
 
-import com.google.common.base.Function;
-import com.google.common.base.Supplier;
 import com.google.common.collect.*;
-import com.google.common.util.concurrent.AbstractFuture;
-import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.Delegate;
-import net.techcable.spawnshield.SpawnShield;
-import net.techcable.spawnshield.SpawnShieldPlayer;
 import net.techcable.spawnshield.Utils;
 import net.techcable.spawnshield.compat.BlockPos;
 import net.techcable.spawnshield.compat.Region;
 import net.techcable.spawnshield.forcefield.BorderFinder;
 import net.techcable.spawnshield.forcefield.ForceFieldUpdateRequest;
-import net.techcable.techutils.collect.Pair;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.*;
 
 @RequiredArgsConstructor
 public class ForceFieldUpdateTask extends BukkitRunnable {
@@ -58,60 +48,74 @@ public class ForceFieldUpdateTask extends BukkitRunnable {
     public void request(ForceFieldUpdateRequest request) {
         requests.put(request.getPlayer().getId(), request);
     }
-    
+
     public void clearRequest(UUID id) {
         requests.remove(id);
     }
 
     private final ConcurrentMap<UUID, ForceFieldUpdateRequest> requests = new ConcurrentHashMap<>();
+    private final ListeningExecutorService executor = makeExecutor();
 
+    private ListeningExecutorService makeExecutor() {
+        if (Runtime.getRuntime().availableProcessors() == 1) {
+            return MoreExecutors.sameThreadExecutor();
+        } else {
+            int numExecutors = Math.max(2, Runtime.getRuntime().availableProcessors() - 2);
+            return MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(numExecutors, new ThreadFactory() {
+                @Override
+                public Thread newThread(Runnable r) {
+                    return new Thread(r, "SpawnShield Forcefield Worker");
+                }
+            }));
+        }
+    }
+
+    private volatile int numExecuting = 0;
     @Override
     public void run() {
         for (UUID playerId : requests.keySet()) {
-            ForceFieldUpdateRequest request = requests.get(playerId);
+            final ForceFieldUpdateRequest request = requests.get(playerId);
             if (request == null) continue;
-            runRequest(request);
+            executor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    numExecuting++;
+                    try {
+                        runRequest(request);
+                    } finally {
+                        numExecuting--;
+                    }
+                }
+            });
         }
     }
 
     public void runRequest(ForceFieldUpdateRequest request) {
-        Set<BlockPos> shownBlocks = new HashSet<BlockPos>();
+        Set<BlockPos> shownBlocks = new HashSet<>();
         BlockPos center = request.getPosition();
         int radius = request.getUpdateRadius();
         for (Region region : request.getRegionsToUpdate()) {
             for (BlockPos borderPoint : getBorders(region)) {
-                for (int y = region.getMin().getY(); y <= region.getMax().getY(); y++) {
-                    BlockPos toShow = borderPoint.withY(y);
-                    if (isInsideCircle(center, toShow, radius)) {
-                        shownBlocks.add(toShow);
-                    }
+                if (isInsideCircle(center, borderPoint, radius)) {
+                    shownBlocks.add(borderPoint);
                 }
             }
         }
-        request.getPlayer().lockLastShownBlocksRead();
-        try {
-            Collection<BlockPos> lastShown = request.getPlayer().getLastShownBlocks();
-            if (lastShown == null) lastShown = new HashSet<>();
-            for (BlockPos noLongerShown : lastShown) {
-                if (shownBlocks.contains(noLongerShown)) continue; //We will show
-                request.getPlayerEntity().sendBlockChange(noLongerShown.toLocation(), noLongerShown.getTypeAt().getId(), noLongerShown.getDataAt());
-            }
-        } finally {
-            request.getPlayer().unlockLastShownBlocksRead();
+        Collection<BlockPos> lastShown = request.getPlayer().getLastShownBlocks();
+        if (lastShown == null) lastShown = new HashSet<>();
+        for (BlockPos noLongerShown : lastShown) {
+            if (shownBlocks.contains(noLongerShown)) continue; //We will show
+            request.getPlayerEntity().sendBlockChange(noLongerShown.toLocation(), noLongerShown.getTypeAt().getId(), noLongerShown.getDataAt());
         }
         for (BlockPos toShow : shownBlocks) {
             if (toShow.getTypeAt().isSolid()) continue;
-            request.getPlayerEntity().sendBlockChange(toShow.toLocation(), Material.STAINED_GLASS, (byte)14);
+            request.getPlayerEntity().sendBlockChange(toShow.toLocation(), Material.STAINED_GLASS, (byte) 14);
         }
-        request.getPlayer().lockLastShownBlocksWrite();
-        try {
-            request.getPlayer().setLastShownBlocks(shownBlocks);
-        } finally {
-            request.getPlayer().unlockLastShownBlocksWrite();
-        }
+        request.getPlayer().setLastShownBlocks(shownBlocks);
     }
 
     private final Map<Region, Collection<BlockPos>> borderCache = Maps.newHashMap(); //Will only be accessed by a single task, so no need for synchronization
+
     private Collection<BlockPos> getBorders(Region region) {
         if (borderCache.size() > 50) {
             Utils.severe("Cache exceeded 50 entries, which should never happen.");
@@ -123,18 +127,16 @@ public class ForceFieldUpdateTask extends BukkitRunnable {
         }
         return borderCache.get(region);
     }
-    
+
     private static boolean isInsideCircle(BlockPos center, BlockPos toCheck, int radius) {
         int centerX = center.getX();
-        int centerY = center.getY();
         int centerZ = center.getZ();
         int x = toCheck.getX();
-        int y = toCheck.getY();
         int z = toCheck.getZ();
-        return cube(x - centerX) + cube(y - centerY) + cube(z - centerZ) <= cube(radius);
+        return square(x - centerX) + square(z - centerZ) <= square(radius);
     }
-    
-    private static int cube(int i) {
-        return i * i * i;
+
+    private static int square(int i) {
+        return i * i;
     }
 }

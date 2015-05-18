@@ -22,6 +22,8 @@
  */
 package net.techcable.spawnshield;
 
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import lombok.*;
 import net.techcable.spawnshield.compat.BlockPos;
 import net.techcable.techutils.entity.TechPlayer;
@@ -47,24 +49,24 @@ public class SpawnShieldPlayer extends TechPlayer {
 
     private Location lastLocationOutsideSafezone = null;
     private long lastCantEnterMessageTime = -1;
-    private Collection<BlockPos> lastShownBlocks; //The forcefield blocks last shown to this player
-    @Getter(AccessLevel.NONE)
+    private Set<BlockPos> lastShownBlocks; //The forcefield blocks last shown to this player
+    /*
     private final ReentrantReadWriteLock lastShownBlocksLock = new ReentrantReadWriteLock();
-    
-    // Lock delegates
+
     public void lockLastShownBlocksRead() {
         lastShownBlocksLock.readLock().lock();
     }
-    
+
     public void unlockLastShownBlocksRead() {
         lastShownBlocksLock.readLock().unlock();
     }
-    
+
     public void lockLastShownBlocksWrite() {
         lastShownBlocksLock.writeLock().lock();
     }
-    
+
     public void unlockLastShownBlocksWrite() {
         lastShownBlocksLock.writeLock().unlock();
     }
+    */
 }
