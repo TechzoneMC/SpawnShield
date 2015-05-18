@@ -1,6 +1,6 @@
 /**
  * The MIT License
- * Copyright (c) 2014-2015 Techcable
+ * Copyright (c) 2015 Techcable
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ import net.techcable.spawnshield.compat.worldguard6.WorldGuard6Plugin;
 import net.techcable.spawnshield.config.SpawnShieldConfig;
 import net.techcable.spawnshield.config.SpawnShieldMessages;
 import net.techcable.spawnshield.forcefield.ForceFieldListener;
+import net.techcable.spawnshield.forcefield.ForceFieldUpdateRequest;
 import net.techcable.spawnshield.tasks.ForceFieldUpdateTask;
 import net.techcable.spawnshield.tasks.KnockbackTask;
 import net.techcable.spawnshield.tasks.TeleportSafezoningTask;
@@ -109,6 +110,8 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
                 Utils.warning("Force field mode is currently unsupported");
                 this.forceFieldListener = new ForceFieldListener();
                 registerListener(forceFieldListener);
+                this.forceFieldUpdateTask = new ForceFieldUpdateTask();
+                forceFieldUpdateTask.runTaskTimerAsynchronously(this, 1, 0); //Every single tick
                 break;
             case TELEPORT :
                 teleportSafezoningTask = new TeleportSafezoningTask();
@@ -123,6 +126,14 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
                 setEnabled(false);
                 return;
         }
+    }
+
+    public void request(ForceFieldUpdateRequest request) {
+        forceFieldUpdateTask.request(request);
+    }
+    
+    public void clearRequest(UUID id) {
+        forceFieldUpdateTask.clearRequest(id);
     }
 
     @Override

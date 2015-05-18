@@ -1,6 +1,6 @@
 /**
  * The MIT License
- * Copyright (c) 2014-2015 Techcable
+ * Copyright (c) 2015 Techcable
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,29 +47,35 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 
 public class ForceFieldListener implements Listener {
-    private final Set<UUID> currentlyProcessing = Sets.newSetFromMap(Maps.<UUID, Boolean>newConcurrentMap());
     @EventHandler(priority = EventPriority.MONITOR)
     public void onMove(PlayerMoveEvent event) {
         if (event.getFrom().equals(event.getTo())) return; //Don't wanna fire if the player turned his head
-        if (currentlyProcessing.contains(event.getPlayer().getUniqueId())) return;
         final SpawnShieldPlayer player = SpawnShield.getInstance().getPlayer(event.getPlayer());
         if (!CombatAPI.isTagged(event.getPlayer())) {
-            if (player.getLastShownBlocks() != null && !currentlyProcessing.contains(player.getId())) {
-                currentlyProcessing.add(player.getId());
+            if (player.getLastShownBlocks() != null) {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
-                        for (BlockPos lastShown : player.getLastShownBlocks()) {
-                            player.getEntity().sendBlockChange(lastShown.toLocation(), lastShown.getTypeAt(), lastShown.getDataAt());
+                        player.lockLastShownBlocksRead();
+                        try {
+                            if (player.getLastShownBlocks() == null) return;
+                            for (BlockPos lastShown : player.getLastShownBlocks()) {
+                                player.getEntity().sendBlockChange(lastShown.toLocation(), lastShown.getTypeAt(), lastShown.getDataAt());
+                            }
+                            player.lockLastShownBlocksWrite();
+                            try {
+                                player.setLastShownBlocks(null);
+                            } finally {
+                                player.unlockLastShownBlocksWrite();
+                            }
+                        } finally {
+                            player.unlockLastShownBlocksRead();
                         }
-                        player.setLastShownBlocks(null);
-                        currentlyProcessing.remove(player.getId());
                     }
                 }.runTaskAsynchronously(SpawnShield.getInstance());
             }
             return;
         }
-        currentlyProcessing.add(player.getId());
         BlockPos pos = new BlockPos(player.getEntity().getLocation());
         Collection<Region> toUpdate = new HashSet<>();
         for (Region region : SpawnShield.getInstance().getSettings().getRegionsToBlock()) {
@@ -77,23 +83,16 @@ public class ForceFieldListener implements Listener {
             toUpdate.add(region);
         }
         ForceFieldUpdateRequest request = new ForceFieldUpdateRequest(pos, toUpdate, player, SpawnShield.getInstance().getSettings().getForcefieldRange());
-        final ForceFieldUpdateTask task = new ForceFieldUpdateTask(request);
-        Bukkit.getScheduler().runTaskAsynchronously(SpawnShield.getInstance(), task);
-        task.addListener(new Runnable() {
-            @Override
-            public void run() {
-                currentlyProcessing.remove(player.getId());
-            }
-        }, MoreExecutors.sameThreadExecutor());
+        SpawnShield.getInstance().request(request);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onLeave(PlayerQuitEvent e) {
-        currentlyProcessing.remove(e.getPlayer().getUniqueId());
+        SpawnShield.getInstance().clearRequest(e.getPlayer().getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onKick(PlayerKickEvent e) {
-        currentlyProcessing.remove(e.getPlayer().getUniqueId());
+        SpawnShield.getInstance().clearRequest(e.getPlayer().getUniqueId());
     }
 }

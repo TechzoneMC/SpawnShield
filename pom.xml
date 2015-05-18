@@ -9,7 +9,7 @@
     <artifactId>parent</artifactId>
     <packaging>pom</packaging>
     <name>SpawnShield</name>
-    <version>1.1.0</version>
+    <version>1.1.1-SNAPSHOT</version>
     <description>Prevents people from entering spawn in combat</description>
     <repositories>
         <repository>

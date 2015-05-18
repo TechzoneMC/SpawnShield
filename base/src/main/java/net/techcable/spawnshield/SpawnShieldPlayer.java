@@ -1,6 +1,6 @@
 /**
  * The MIT License
- * Copyright (c) 2014-2015 Techcable
+ * Copyright (c) 2015 Techcable
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,7 @@
  */
 package net.techcable.spawnshield;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import net.techcable.spawnshield.compat.BlockPos;
 import net.techcable.techutils.entity.TechPlayer;
 import org.bukkit.Location;
@@ -31,6 +30,7 @@ import org.bukkit.Location;
 import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Getter
 @Setter
@@ -45,9 +45,26 @@ public class SpawnShieldPlayer extends TechPlayer {
         return (SpawnShield) super.getPlugin();
     }
 
-
-    private boolean forcefielded = false;
     private Location lastLocationOutsideSafezone = null;
     private long lastCantEnterMessageTime = -1;
     private Collection<BlockPos> lastShownBlocks; //The forcefield blocks last shown to this player
+    @Getter(AccessLevel.NONE)
+    private final ReentrantReadWriteLock lastShownBlocksLock = new ReentrantReadWriteLock();
+    
+    // Lock delegates
+    public void lockLastShownBlocksRead() {
+        lastShownBlocksLock.readLock().lock();
+    }
+    
+    public void unlockLastShownBlocksRead() {
+        lastShownBlocksLock.readLock().unlock();
+    }
+    
+    public void lockLastShownBlocksWrite() {
+        lastShownBlocksLock.writeLock().lock();
+    }
+    
+    public void unlockLastShownBlocksWrite() {
+        lastShownBlocksLock.writeLock().unlock();
+    }
 }
