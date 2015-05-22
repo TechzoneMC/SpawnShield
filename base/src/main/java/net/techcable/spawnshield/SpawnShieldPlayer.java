@@ -25,6 +25,7 @@ package net.techcable.spawnshield;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import lombok.*;
+import net.techcable.spawnshield.change.BlockChangeTracker;
 import net.techcable.spawnshield.compat.BlockPos;
 import net.techcable.techutils.entity.TechPlayer;
 import org.bukkit.Location;

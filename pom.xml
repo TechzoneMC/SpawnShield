@@ -29,6 +29,10 @@
         <module>api</module>
         <module>base</module>
         <module>worldguard6</module>
+        <!-- NMS Compat -->
+        <module>nms-v1_8_R1</module>
+        <module>nms-v1_8_R2</module>
+        <module>nms-v1_8_R3</module>
     </modules>
     <dependencies>
         <dependency>

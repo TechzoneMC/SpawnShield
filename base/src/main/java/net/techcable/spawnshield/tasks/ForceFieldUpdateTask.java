@@ -25,9 +25,9 @@ package net.techcable.spawnshield.tasks;
 import com.google.common.collect.*;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.RequiredArgsConstructor;
 import net.techcable.spawnshield.Utils;
+import net.techcable.spawnshield.change.BlockChangeTracker;
 import net.techcable.spawnshield.compat.BlockPos;
 import net.techcable.spawnshield.compat.Region;
 import net.techcable.spawnshield.forcefield.BorderFinder;
@@ -93,6 +93,7 @@ public class ForceFieldUpdateTask extends BukkitRunnable {
     public void runRequest(ForceFieldUpdateRequest request) {
         Set<BlockPos> shownBlocks = new HashSet<>();
         BlockPos center = request.getPosition();
+        BlockChangeTracker tracker = new BlockChangeTracker(request.getPlayerEntity());
         int radius = request.getUpdateRadius();
         for (Region region : request.getRegionsToUpdate()) {
             for (BlockPos borderPoint : getBorders(region)) {
@@ -105,12 +106,13 @@ public class ForceFieldUpdateTask extends BukkitRunnable {
         if (lastShown == null) lastShown = new HashSet<>();
         for (BlockPos noLongerShown : lastShown) {
             if (shownBlocks.contains(noLongerShown)) continue; //We will show
-            request.getPlayerEntity().sendBlockChange(noLongerShown.toLocation(), noLongerShown.getTypeAt().getId(), noLongerShown.getDataAt());
+            tracker.addBlockChange(noLongerShown, noLongerShown.getTypeAt(), noLongerShown.getDataAt());
         }
         for (BlockPos toShow : shownBlocks) {
             if (toShow.getTypeAt().isSolid()) continue;
-            request.getPlayerEntity().sendBlockChange(toShow.toLocation(), Material.STAINED_GLASS, (byte) 14);
+            tracker.addBlockChange(toShow, Material.STAINED_GLASS, 14);
         }
+        tracker.flush();
         request.getPlayer().setLastShownBlocks(shownBlocks);
     }
 

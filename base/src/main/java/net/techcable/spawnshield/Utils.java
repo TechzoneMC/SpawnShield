@@ -25,10 +25,47 @@ package net.techcable.spawnshield;
 import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import net.techcable.spawnshield.compat.ChunkPos;
+import net.techcable.spawnshield.nms.BlockChange;
+import net.techcable.spawnshield.nms.NMS;
+import net.techcable.techutils.Reflection;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
+import java.lang.reflect.Constructor;
+import java.util.Collection;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Utils {
+
+    private static NMS nms;
+    private static final Object nmsInitLock = new Object();
+    public static NMS getNms() {
+        if (nms == null) {
+            synchronized (nmsInitLock) {
+                if (nms == null) {
+                    String className = "net.techcable.spawnshield.nms.versions." + Reflection.getVersion() + ".NMSImpl";
+                    Class<?> nmsClazz = Reflection.getClass(className);
+                    Constructor constructor = nmsClazz == null ? null : Reflection.makeConstructor(nmsClazz);
+                    if (constructor == null) {
+                        warning("This version of minecraft is unsupported");
+                        warning("Forcefields will be less efficient, and players will be spammed with packets");
+                        nms = new NMS() {
+                            @Override
+                            public void sendMultiBlockChange(Player player, ChunkPos chunkPos, Collection<BlockChange> changes) {
+                                for (BlockChange change : changes) {
+                                    player.sendBlockChange(change.getPos().toLocation(), change.getNewMaterial(), change.getNewData());
+                                }
+                            }
+                        };
+                    } else {
+                        nms = (NMS) Reflection.callConstructor(constructor);
+                    }
+                }
+            }
+        }
+        return nms;
+    }
 
     public static void severe(String error) {
         Bukkit.getLogger().severe("[SpawnShield] " + error);
