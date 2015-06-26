@@ -93,6 +93,7 @@ public class CombatAPI {
             return timeLeft;
         } else if (hasCombatTagPlus()){
             Object tag = getTag(player.getUniqueId());
+            if (tag == null) return -1;
             if (getTagDurationMethod == null) {
                 getTagDurationMethod = makeMethod(Reflection.getClass("net.minelink.ctplus.Tag"), "getTagDuration");
             }
