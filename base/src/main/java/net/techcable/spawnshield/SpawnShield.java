@@ -33,8 +33,10 @@ import net.techcable.spawnshield.tasks.KnockbackTask;
 import net.techcable.spawnshield.tasks.TeleportSafezoningTask;
 import net.techcable.techutils.TechPlugin;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -59,10 +61,16 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
             setEnabled(false);
             return;
         }
-        settings = new SpawnShieldConfig(this);
-        messages = new SpawnShieldMessages(this);
-        settings.init();
-        messages.init();
+        settings = new SpawnShieldConfig();
+        messages = new SpawnShieldMessages();
+        try {
+            settings.load(new File(getDataFolder(), "config.yml"), SpawnShield.class.getResource("/config.yml"));
+            messages.load(new File(getDataFolder(), "messages.yml"), SpawnShield.class.getResource("/messages.yml"));
+        } catch (IOException | InvalidConfigurationException e) {
+            Utils.severe("Disabling, Unable to load configuration files", e);
+            setEnabled(false);
+            return;
+        }
         try {
             Metrics metrics = new Metrics(this);
             Metrics.Graph mode = metrics.createGraph("Mode");
@@ -138,7 +146,12 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
 
     @Override
     protected void shutdown() {
-        getSettings().save();
+        try {
+            getSettings().save(new File(getDataFolder(), "config.yml"), SpawnShield.class.getResource("/config.yml"));
+            getMessages().save(new File(getDataFolder(), "messages.yml"), SpawnShield.class.getResource("/messages.yml"));
+        } catch (InvalidConfigurationException | IOException e) {
+            Utils.severe("Unable to save configuration", e);
+        }
     }
 
     @Override

@@ -1,0 +1,21 @@
+# SpawnShield Config
+
+# The list of regions to block entry into in combat
+# This option can be controlled by the command /spawnshield block command
+# Please use the command to edit this option, as it checks for errors when you add them
+blockRegions:
+  - "example"
+  - "example2"
+
+# The prevention mode to put the plugin in
+# 'teleport' teleports the player to their last known location outside of the safezone if they enter a safezone
+# 'knockback' knocks the player back when they enter a safezone and is experimental
+# 'forcefield' is currently in development, and should not be used unless you know what you are doing
+mode: "teleport"
+
+# Print out a ****load of information about the plugin
+# You probably shouldn't use this unless you are testing the plugin
+debug: false
+
+# The range in which players will see a forcefield
+forcefieldRange: 50;

@@ -34,6 +34,7 @@ import org.bukkit.entity.Player;
 
 import java.lang.reflect.Constructor;
 import java.util.Collection;
+import java.util.logging.Level;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Utils {
@@ -69,6 +70,10 @@ public class Utils {
 
     public static void severe(String error) {
         Bukkit.getLogger().severe("[SpawnShield] " + error);
+    }
+
+    public static void severe(String error, Throwable t) {
+        Bukkit.getLogger().log(Level.SEVERE, "[SpawnShield] " + error, t);
     }
 
     public static void warning(String error) {

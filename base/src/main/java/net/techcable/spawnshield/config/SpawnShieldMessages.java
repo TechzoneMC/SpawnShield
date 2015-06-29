@@ -22,43 +22,15 @@
  */
 package net.techcable.spawnshield.config;
 
-import com.google.common.base.Throwables;
 import net.techcable.spawnshield.SpawnShield;
-import net.techcable.techutils.collect.Pair;
-import net.techcable.techutils.yamler.Comments;
-import net.techcable.techutils.yamler.Config;
-import net.techcable.techutils.yamler.InvalidConfigurationException;
-import org.bukkit.Bukkit;
+import net.techcable.techutils.config.AnnotationConfig;
+import net.techcable.techutils.config.Setting;
+
 import org.bukkit.ChatColor;
-import org.bukkit.World;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+public class SpawnShieldMessages extends AnnotationConfig {
 
-public class SpawnShieldMessages extends Config {
-    public SpawnShieldMessages(SpawnShield plugin) {
-        CONFIG_FILE = new File(plugin.getDataFolder(), "messages.yml");
-        CONFIG_HEADER = new String[] {
-                "Messagse for spawnshield",
-                "Supports color codes with the '&' character"
-        };
-    }
-
-    @Override
-    public void init() {
-        try {
-            super.init();
-        } catch (InvalidConfigurationException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    @Comments({
-            "In mode teleport this message will be sent if they enter a safezone in combat",
-            "Will be sent at max once a second"
-    })
+    @Setting("cantEnterSafezone")
     private String cantEnterSafezone = "&4[SpawnShield] You can't enter a safezone in combat!";
 
     public String getCantEnterSafezone() {

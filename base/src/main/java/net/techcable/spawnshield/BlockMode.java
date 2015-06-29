@@ -22,11 +22,9 @@
  */
 package net.techcable.spawnshield;
 
-import lombok.RequiredArgsConstructor;
-import net.techcable.techutils.yamler.InternalConverter;
-import net.techcable.techutils.yamler.converter.Converter;
+import net.techcable.techutils.config.ConfigSerializer;
 
-import java.lang.reflect.ParameterizedType;
+import org.bukkit.configuration.InvalidConfigurationException;
 
 public enum BlockMode {
     TELEPORT,
@@ -38,30 +36,28 @@ public enum BlockMode {
         return name().toLowerCase();
     }
 
-    public static class BlockModeConverter implements Converter {
-        public BlockModeConverter(InternalConverter internalConverter) {
-            //I don't know what to do with an internal converter
+    public static class BlockModeConverter implements ConfigSerializer<BlockMode> {
+
+
+        @Override
+        public Object serialize(BlockMode blockMode) {
+            return blockMode.toString();
         }
 
         @Override
-        public Object toConfig(Class<?> aClass, Object o, ParameterizedType parameterizedType) throws Exception {
-            BlockMode mode = (BlockMode) o;
-            return o.toString();
-        }
-
-        @Override
-        public Object fromConfig(Class<?> aClass, Object o, ParameterizedType parameterizedType) throws Exception {
-            String name = o.toString();
+        public BlockMode deserialize(Object o, Class<? extends BlockMode> aClass) throws InvalidConfigurationException {
+            if (!(o instanceof String)) throw new InvalidConfigurationException("block mode must be a string");
+            String name = (String) o;
             try {
                 return BlockMode.valueOf(name.toUpperCase());
             } catch (IllegalArgumentException e) {
-                throw new RuntimeException(name + " is not a valid mode for SpawnShield");
+                throw new InvalidConfigurationException(name + " is not a valid mode for SpawnShield");
             }
         }
 
         @Override
-        public boolean supports(Class<?> aClass) {
-            return BlockMode.class.isAssignableFrom(aClass);
+        public boolean canHandle(Class<?> aClass) {
+            return BlockMode.class.equals(aClass);
         }
     }
 }

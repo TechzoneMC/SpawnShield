@@ -29,15 +29,15 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Synchronized;
 import net.techcable.spawnshield.BlockMode;
+import net.techcable.spawnshield.BlockMode.BlockModeConverter;
 import net.techcable.spawnshield.SpawnShield;
 import net.techcable.spawnshield.Utils;
 import net.techcable.spawnshield.compat.ProtectionPlugin;
 import net.techcable.spawnshield.compat.Region;
 import net.techcable.techutils.collect.Pair;
-import net.techcable.techutils.yamler.Comments;
-import net.techcable.techutils.yamler.Config;
-import net.techcable.techutils.yamler.InvalidConfigurationException;
-import net.techcable.techutils.yamler.InvalidConverterException;
+import net.techcable.techutils.config.AnnotationConfig;
+import net.techcable.techutils.config.Setting;
+
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 
@@ -49,47 +49,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
-public class SpawnShieldConfig extends Config {
-    public SpawnShieldConfig(SpawnShield plugin) {
-        CONFIG_FILE = new File(plugin.getDataFolder(), "config.yml");
-        try {
-            addConverter(BlockMode.BlockModeConverter.class);
-        } catch (InvalidConverterException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    @Override
-    @Synchronized("lock")
-    public void init() {
-        Utils.assertMainThread();
-        try {
-            super.init();
-        } catch (InvalidConfigurationException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    @Override
-    @Synchronized("lock")
-    public void load() {
-        Utils.assertMainThread();
-        try {
-            super.load();
-        } catch (InvalidConfigurationException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    @Override
-    @Synchronized("lock")
-    public void save() {
-        Utils.assertMainThread();
-        try {
-            super.save();
-        } catch (InvalidConfigurationException e) {
-            throw Throwables.propagate(e);
-        }
+public class SpawnShieldConfig extends AnnotationConfig {
+    static {
+        addSerializer(new BlockModeConverter());
     }
 
     public void addRegionToBlock(Region r) {
@@ -104,29 +66,17 @@ public class SpawnShieldConfig extends Config {
         refreshRegionsToBlock();
     }
 
-    @Comments({
-            "The list of regions to block entry into in combat",
-            "This option can be controlled by the command /spawnshield block command",
-            "Please use the command to edit this option, as it checks for errors when you add them"
-    })
+    @Setting("blockRegions")
     @Getter(AccessLevel.NONE) //Use the cached and thread safe version
     private List<String> blockRegions = Lists.newArrayList("example", "example2");
-    @Comments({
-            "The prevention mode to put the plugin in",
-            "'teleport' teleports the player to their last known location outside of the safezone if they enter a safezone",
-            "'knockback' knocks the player back when they enter a safezone and is experimental",
-            "'forcefield' is currently in development, and should not be used unless you know what you are doing"
-    })
+
+    @Setting("mode")
     private BlockMode mode = BlockMode.TELEPORT;
-    @Comments({
-            "Print out a ****load of information about the plugin",
-            "You probably shouldn't use this unless you are testing the plugin"
-    })
+
+    @Setting("debug")
     private boolean debug = false;
 
-    @Comments(
-            "The range in which players will see a forcefield"
-    )
+    @Setting("forcefieldRange")
     private int forcefieldRange = 50;
 
     @Synchronized("lock")
