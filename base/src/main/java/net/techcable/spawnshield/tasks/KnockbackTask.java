@@ -43,7 +43,7 @@ public class KnockbackTask extends BukkitRunnable {
         for (Player playerEntity : Bukkit.getOnlinePlayers()) {
             SpawnShieldPlayer player = SpawnShield.getInstance().getPlayer(playerEntity);
             if (isBlocked(playerEntity.getLocation())) {
-                if (!CombatAPI.isTagged(playerEntity)) continue;
+                if (!player.isBlocked()) continue;
                 if (player.getLastLocationOutsideSafezone() == null) return;
                 if (player.getLastCantEnterMessageTime() + 1500 < System.currentTimeMillis()) {
                     playerEntity.sendMessage(SpawnShield.getInstance().getMessages().getCantEnterSafezone());

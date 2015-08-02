@@ -50,7 +50,10 @@ public class CombatAPI {
      * Returns if a player is combat tagged
      * @param player the player to check
      * @return true if combat tagged
+     *
+     * @deprecated please use
      */
+    @Deprecated
     public static boolean isTagged(Player player) {
         if (hasCombatTag()) {
             return getCombatTagApi().isInCombat(player);

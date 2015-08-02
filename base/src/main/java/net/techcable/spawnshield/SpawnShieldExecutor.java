@@ -101,7 +101,7 @@ public class SpawnShieldExecutor implements CommandExecutor {
                     if (!plugin.hasRegion(world, regionName)) continue;;
                     hasRegion = true;
                     Region region = plugin.getRegion(world, regionName);
-                    SpawnShield.getInstance().getSettings().addRegionToBlock(region);
+                    SpawnShield.getInstance().getSettings().removeRegionToBlock(region);
                 }
                 if (hasRegion) {
                     sender.sendMessage("Successfuly unblocked region " + regionName + " in " + worldName);

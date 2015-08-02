@@ -162,4 +162,5 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
     public static SpawnShield getInstance() {
         return JavaPlugin.getPlugin(SpawnShield.class);
     }
+
 }

@@ -20,15 +20,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.techcable.spawnshield.forcefield; /**
- * (c) 2015 Nicholas Schlabach
- * 
- * You are free to use this class as long as you meet the following conditions
- * 
- * 1. You may not charge money for access to any software conaining or accessing this class
- * 2. Any software containing or accessing this class must be available to the public on either dev.bukkit.org or spigotmc.org
- * 3. ALL source code for any piece of software using this class must be given out
- */
+package net.techcable.spawnshield.forcefield;
+
 import net.techcable.spawnshield.compat.BlockPos;
 import net.techcable.spawnshield.compat.Region;
 

@@ -48,6 +48,20 @@ public class SpawnShieldPlayer extends TechPlayer {
         return (SpawnShield) super.getPlugin();
     }
 
+    private long lastTagTime = -1;
+
+    @SuppressWarnings("depreciation")
+    public boolean isBlocked() {
+        if (CombatAPI.isTagged(getEntity())) {
+            lastTagTime = CombatAPI.getRemainingTagTime(getEntity());
+            return true;
+        } else {
+            long delay = getPlugin().getSettings().getAfterCombatDelay();
+            if (lastTagTime + delay > System.currentTimeMillis()) return true;
+            return false;
+        }
+    }
+
     private Location lastLocationOutsideSafezone = null;
     private long lastCantEnterMessageTime = -1;
     private Set<BlockPos> lastShownBlocks; //The forcefield blocks last shown to this player

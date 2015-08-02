@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Getter
 public class SpawnShieldConfig extends AnnotationConfig {
@@ -68,16 +69,16 @@ public class SpawnShieldConfig extends AnnotationConfig {
 
     @Setting("blockRegions")
     @Getter(AccessLevel.NONE) //Use the cached and thread safe version
-    private List<String> blockRegions = Lists.newArrayList("example", "example2");
+    private List<String> blockRegions;
 
     @Setting("mode")
-    private BlockMode mode = BlockMode.TELEPORT;
+    private BlockMode mode;
 
     @Setting("debug")
-    private boolean debug = false;
+    private boolean debug;
 
-    @Setting("forcefieldRange")
-    private int forcefieldRange = 50;
+    @Setting("force-field.range")
+    private int forceFieldRange;
 
     @Synchronized("lock")
     public void refreshRegionsToBlock() {
@@ -90,6 +91,19 @@ public class SpawnShieldConfig extends AnnotationConfig {
     @Synchronized("lock")
     public void addProtectionPlugin(ProtectionPlugin plugin) {
         plugins.add(plugin);
+    }
+
+    @Setting("afterCombatDelay")
+    @Getter(AccessLevel.NONE)
+    private int afterCombatDelay;
+
+    /**
+     * Get the delay in milliseconds players must wait after being tagged until they can re-enter spawn
+     *
+     * @return the delay in millesconds
+     */
+    public long getAfterCombatDelay() {
+        return TimeUnit.MINUTES.toMillis(afterCombatDelay);
     }
 
     private final Set<ProtectionPlugin> plugins = new HashSet<>();

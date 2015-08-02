@@ -43,7 +43,7 @@ public class TeleportSafezoningTask extends BukkitRunnable {
         for (Player playerEntity : Bukkit.getOnlinePlayers()) {
             SpawnShieldPlayer player = SpawnShield.getInstance().getPlayer(playerEntity);
             if (isBlocked(playerEntity.getLocation())) {
-                if (CombatAPI.isTagged(playerEntity)){
+                if (player.isBlocked()){
                     if (player.getLastLocationOutsideSafezone() == null) {
                         Utils.warning(player.getName() + "'s last location outside safezone is unknown");
                     } else {

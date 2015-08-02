@@ -9,13 +9,18 @@ blockRegions:
 
 # The prevention mode to put the plugin in
 # 'teleport' teleports the player to their last known location outside of the safezone if they enter a safezone
-# 'knockback' knocks the player back when they enter a safezone and is experimental
-# 'forcefield' is currently in development, and should not be used unless you know what you are doing
-mode: "teleport"
+# 'knockback' knocks the player back when they enter a safezone
+# 'forcefield' shows red glass around the border of blocked regions (spawn) to prevent players from entering
+mode: "forcefield"
 
 # Print out a ****load of information about the plugin
 # You probably shouldn't use this unless you are testing the plugin
 debug: false
 
-# The range in which players will see a forcefield
-forcefieldRange: 50;
+# The time (in seconds) after their combat tag has expired, that they still are blocked from spawn
+afterCombatDelay: 0
+
+# ForceField settings
+force-field:
+  # The radius around which players will see a forcefield
+  range: 50

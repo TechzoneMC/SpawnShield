@@ -47,26 +47,25 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 
 public class ForceFieldListener implements Listener {
+
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onMove(PlayerMoveEvent event) {
         if (event.getFrom().equals(event.getTo())) return; //Don't wanna fire if the player turned his head
         final SpawnShieldPlayer player = SpawnShield.getInstance().getPlayer(event.getPlayer());
-        if (!CombatAPI.isTagged(event.getPlayer())) {
+        if (!player.isBlocked()) {
             SpawnShield.getInstance().clearRequest(event.getPlayer().getUniqueId());
             if (player.getLastShownBlocks() != null) {
-                if (player.getLastShownBlocks() != null) {
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            if (player.getLastShownBlocks() == null) return;
-                            for (BlockPos lastShown : player.getLastShownBlocks()) {
-                                player.getEntity().sendBlockChange(lastShown.toLocation(), lastShown.getTypeAt(), lastShown.getDataAt());
-                            }
-                            player.setLastShownBlocks(null);
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        if (player.getLastShownBlocks() == null) return;
+                        for (BlockPos lastShown : player.getLastShownBlocks()) {
+                            player.getEntity().sendBlockChange(lastShown.toLocation(), lastShown.getTypeAt(), lastShown.getDataAt());
                         }
-                    }.runTaskAsynchronously(SpawnShield.getInstance());
-                }
-                return;
+                        player.setLastShownBlocks(null);
+                    }
+                }.runTaskAsynchronously(SpawnShield.getInstance());
             }
             return;
         }
@@ -76,7 +75,7 @@ public class ForceFieldListener implements Listener {
             if (!region.getWorld().equals(event.getPlayer().getWorld())) continue; //We dont need this one: Yay!
             toUpdate.add(region);
         }
-        ForceFieldUpdateRequest request = new ForceFieldUpdateRequest(pos, toUpdate, player, SpawnShield.getInstance().getSettings().getForcefieldRange());
+        ForceFieldUpdateRequest request = new ForceFieldUpdateRequest(pos, toUpdate, player, SpawnShield.getInstance().getSettings().getForceFieldRange());
         SpawnShield.getInstance().request(request);
     }
 
