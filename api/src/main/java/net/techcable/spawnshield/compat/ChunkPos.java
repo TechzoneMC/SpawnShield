@@ -35,6 +35,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.plugin.Plugin;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 
 /**
@@ -81,6 +82,29 @@ public class ChunkPos {
 
     public boolean isLoaded() {
         return getWorld().isChunkLoaded(getX(), getZ());
+    }
+
+    public Chunk getChunkIfLoaded() {
+        return isLoaded() ? world.getChunkAt(getX(), getZ()) : null;
+    }
+
+    public static final int RETRIES_BEFORE_ERROR = 4;
+
+    public Chunk getChunk() {
+        Chunk chunk;
+        if (Bukkit.isPrimaryThread()) {
+            chunk = world.getChunkAt(getX(), getZ());
+        } else {
+            chunk = getChunkIfLoaded();
+            if (chunk == null) {
+                for (int i = 0; chunk == null && i < RETRIES_BEFORE_ERROR; i++) {
+                    load();
+                    chunk = getChunkIfLoaded();
+                }
+                if (chunk == null) throw new RuntimeException("Unable to load chunk after " + RETRIES_BEFORE_ERROR + "tries");
+            }
+        }
+        return chunk;
     }
 
     public void load() {

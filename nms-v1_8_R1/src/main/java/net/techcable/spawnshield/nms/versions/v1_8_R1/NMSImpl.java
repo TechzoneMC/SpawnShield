@@ -27,7 +27,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Queue;
-import java.util.concurrent.locks.ReadWriteLock;
 
 import net.minecraft.server.v1_8_R1.Block;
 import net.minecraft.server.v1_8_R1.Chunk;
@@ -80,9 +79,8 @@ public class NMSImpl implements NMS {
 
     private Field processedDisconnectField = Reflection.makeField(PlayerConnection.class, "processedDisconnect");
     private Field channelField = Reflection.getOnlyField(NetworkManager.class, Channel.class); // Obfuscated!
-    private Field queueLockField = Reflection.getOnlyField(NetworkManager.class, ReadWriteLock.class); // Obfuscated!
     private Field packetQueueField = Reflection.getOnlyField(NetworkManager.class, Queue.class); // Obfuscated
-    private Class<?> queuedPacketClass = Reflection.getNmsClass("NetworkManager$QueuedPacket"); // Package private
+    private Class<?> queuedPacketClass = Reflection.getNmsClass("QueuedPacket"); // Package private
     private Constructor queuedPacketConstructor = Reflection.makeConstructor(queuedPacketClass, Packet.class, GenericFutureListener[].class);
     private Field queuedPacketBackingField = Reflection.getOnlyField(queuedPacketClass, Packet.class);
 
@@ -97,15 +95,9 @@ public class NMSImpl implements NMS {
                 Channel channel = Reflection.getField(channelField, networkManager);
                 channel.write(packet); // Don't flush right now
             } else { // Should be a Queued Packet
-                ReadWriteLock lock = Reflection.getField(queueLockField, networkManager);
                 Object queuedPacket = Reflection.callConstructor(queuedPacketConstructor, packet, null);
-                lock.writeLock().lock();
-                try {
-                    Queue<Object> packetQueue = Reflection.getField(packetQueueField, networkManager);
-                    packetQueue.add(queuedPacket);
-                } finally {
-                    lock.writeLock().unlock();
-                }
+                Queue<Object> packetQueue = Reflection.getField(packetQueueField, networkManager);
+                packetQueue.add(queuedPacket);
             }
         } catch (Throwable t) {
             connection.sendPacket(packet);
@@ -138,19 +130,13 @@ public class NMSImpl implements NMS {
             return;
         }
         // By here we are in the event loop
-        ReadWriteLock lock = Reflection.getField(queueLockField, networkManager);
-        lock.readLock().lock();
-        try {
-            Queue<Object> nativeQueue = Reflection.getField(packetQueueField, networkManager);
-            Object queuedPacket;
-            while ((queuedPacket = nativeQueue.poll()) != null) {
-                if (!(queuedPacketClass.isInstance(queuedPacket))) continue;
-                Packet backingPacket = Reflection.getField(queuedPacketBackingField, queuedPacket);
-                if (backingPacket == null) continue;
-                channel.write(backingPacket);
-            }
-        } finally {
-            lock.readLock().unlock();
+        Queue<Object> nativeQueue = Reflection.getField(packetQueueField, networkManager);
+        Object queuedPacket;
+        while ((queuedPacket = nativeQueue.poll()) != null) {
+            if (!(queuedPacketClass.isInstance(queuedPacket))) continue;
+            Packet backingPacket = Reflection.getField(queuedPacketBackingField, queuedPacket);
+            if (backingPacket == null) continue;
+            channel.write(backingPacket);
         }
     }
 
