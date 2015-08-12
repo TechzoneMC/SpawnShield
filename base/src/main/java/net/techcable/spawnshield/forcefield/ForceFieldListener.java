@@ -28,8 +28,10 @@ import com.google.common.util.concurrent.MoreExecutors;
 import net.techcable.spawnshield.CombatAPI;
 import net.techcable.spawnshield.SpawnShield;
 import net.techcable.spawnshield.SpawnShieldPlayer;
+import net.techcable.spawnshield.change.BlockChangeTracker;
 import net.techcable.spawnshield.compat.BlockPos;
 import net.techcable.spawnshield.compat.Region;
+import net.techcable.spawnshield.nms.ChunkNotLoadedException;
 import net.techcable.spawnshield.tasks.ForceFieldUpdateTask;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -60,9 +62,15 @@ public class ForceFieldListener implements Listener {
                     @Override
                     public void run() {
                         if (player.getLastShownBlocks() == null) return;
+                        BlockChangeTracker tracker = new BlockChangeTracker(player.getEntity());
                         for (BlockPos lastShown : player.getLastShownBlocks()) {
-                            player.getEntity().sendBlockChange(lastShown.toLocation(), lastShown.getTypeAt(), lastShown.getDataAt());
+                            try {
+                                tracker.addBlockChange(lastShown, lastShown.getTypeAt(), lastShown.getDataAt());
+                            } catch (ChunkNotLoadedException e) {
+                                continue; // We don't need to refresh blocks the player can't see
+                            }
                         }
+                        tracker.flush();
                         player.setLastShownBlocks(null);
                     }
                 }.runTaskAsynchronously(SpawnShield.getInstance());

@@ -32,6 +32,8 @@ import net.techcable.spawnshield.compat.BlockPos;
 import net.techcable.spawnshield.compat.Region;
 import net.techcable.spawnshield.forcefield.BorderFinder;
 import net.techcable.spawnshield.forcefield.ForceFieldUpdateRequest;
+import net.techcable.spawnshield.nms.ChunkNotLoadedException;
+
 import org.bukkit.Material;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -106,10 +108,18 @@ public class ForceFieldUpdateTask extends BukkitRunnable {
         if (lastShown == null) lastShown = new HashSet<>();
         for (BlockPos noLongerShown : lastShown) {
             if (shownBlocks.contains(noLongerShown)) continue; //We will show
-            tracker.addBlockChange(noLongerShown, noLongerShown.getTypeAt(), noLongerShown.getDataAt());
+            try {
+                tracker.addBlockChange(noLongerShown, noLongerShown.getTypeAt(), noLongerShown.getDataAt());
+            } catch (ChunkNotLoadedException e) {
+                continue; // We don't need to refresh blocks the player can't see
+            }
         }
         for (BlockPos toShow : shownBlocks) {
-            if (toShow.getTypeAt().isSolid()) continue;
+            try {
+                if (toShow.getTypeAt().isSolid()) continue;
+            } catch (ChunkNotLoadedException e) {
+                continue; // We don't need to fake blocks the player can't see
+            }
             tracker.addBlockChange(toShow, Material.STAINED_GLASS, 14);
         }
         tracker.flush();

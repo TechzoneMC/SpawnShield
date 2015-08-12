@@ -25,8 +25,11 @@ package net.techcable.spawnshield;
 import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+
+import net.techcable.spawnshield.compat.BlockPos;
 import net.techcable.spawnshield.compat.ChunkPos;
 import net.techcable.spawnshield.nms.BlockChange;
+import net.techcable.spawnshield.nms.ChunkNotLoadedException;
 import net.techcable.spawnshield.nms.NMS;
 import net.techcable.techutils.Reflection;
 import org.bukkit.Bukkit;
@@ -58,9 +61,29 @@ public class Utils {
                                     player.sendBlockChange(change.getPos().toLocation(), change.getNewMaterial(), change.getNewData());
                                 }
                             }
+
+                            @Override
+                            public void flushQueue(Player player) {}
+
+                            @Override
+                            public int getDirectId(BlockPos pos) throws ChunkNotLoadedException {
+                                assertLoaded(pos);
+                                return pos.getWorld().getBlockTypeIdAt(pos.getX(), pos.getY(), pos.getZ());
+                            }
+
+                            @Override
+                            public int getDirectMeta(BlockPos pos) throws ChunkNotLoadedException {
+                                assertLoaded(pos);
+                                return pos.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()).getData();
+                            }
+
+                            private void assertLoaded(BlockPos pos) throws ChunkNotLoadedException {
+                                if (!pos.getChunkPos().isLoaded()) throw new ChunkNotLoadedException();
+                            }
                         };
                     } else {
                         nms = (NMS) Reflection.callConstructor(constructor);
+                        BlockPos.setNmsImplementation(nms);
                     }
                 }
             }

@@ -22,6 +22,8 @@
  */
 package net.techcable.spawnshield;
 
+import java.lang.annotation.Annotation;
+
 import net.techcable.techutils.config.ConfigSerializer;
 
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -38,14 +40,13 @@ public enum BlockMode {
 
     public static class BlockModeConverter implements ConfigSerializer<BlockMode> {
 
-
         @Override
-        public Object serialize(BlockMode blockMode) {
+        public Object serialize(BlockMode blockMode, Annotation[] annotations) {
             return blockMode.toString();
         }
 
         @Override
-        public BlockMode deserialize(Object o, Class<? extends BlockMode> aClass) throws InvalidConfigurationException {
+        public BlockMode deserialize(Object o, Class<? extends BlockMode> type, Annotation[] annotations) throws InvalidConfigurationException {
             if (!(o instanceof String)) throw new InvalidConfigurationException("block mode must be a string");
             String name = (String) o;
             try {
@@ -56,7 +57,12 @@ public enum BlockMode {
         }
 
         @Override
-        public boolean canHandle(Class<?> aClass) {
+        public boolean canDeserialize(Class<?> aClass) {
+            return aClass == String.class;
+        }
+
+        @Override
+        public boolean canSerialize(Class<?> aClass) {
             return BlockMode.class.equals(aClass);
         }
     }

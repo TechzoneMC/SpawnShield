@@ -23,11 +23,19 @@
 package net.techcable.spawnshield.compat;
 
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.plugin.Plugin;
+
+import com.google.common.base.Throwables;
 
 /**
  * An immutable position of a chunk
@@ -35,29 +43,70 @@ import org.bukkit.World;
 @RequiredArgsConstructor
 @Getter
 public class ChunkPos {
+
     private final int x, z;
     private final World world;
 
     public int getAbsoluteX(int relativeX) {
         return fromRelative(getX(), relativeX);
     }
+
     public int getAbsoluteZ(int absoluteZ) {
         return fromRelative(getZ(), absoluteZ);
     }
-    public static ChunkPos fromChunk(Chunk chunk) {
-        return new ChunkPos(chunk.getX(), chunk.getZ(), chunk.getWorld());
+
+    public ChunkPos(Chunk chunk) {
+        this(chunk.getX(), chunk.getZ(), chunk.getWorld());
     }
-    public static ChunkPos fromLocation(Location l) {
-        return new ChunkPos(l.getBlockX() >> 4, l.getBlockZ() >> 4, l.getWorld());
+
+    public ChunkPos(Location l) {
+        this(l.getBlockX() >> 4, l.getBlockZ() >> 4, l.getWorld());
     }
-    public static int toRelative(int absolute) {
-        return absolute & 0xF; //First 16 bits
+
+    public int getRelativeX(BlockPos absolute) {
+        return absolute.getX() & 0xF; //First 16 bits
     }
-    public static int fromRelative(int chunk, int relative) {
+
+    public int getRelativeZ(BlockPos absolute) {
+        return absolute.getZ() & 0xF; //First 16 bits
+    }
+
+    public int getSection(BlockPos absolute) {
+        return absolute.getY() & 0xF;
+    }
+
+    private static int fromRelative(int chunk, int relative) {
         return (chunk << 4) | (relative & 0xF);
     }
 
     public boolean isLoaded() {
         return getWorld().isChunkLoaded(getX(), getZ());
     }
+
+    public void load() {
+        if (isLoaded()) return;
+        Plugin plugin = Bukkit.getPluginManager().getPlugin("SpawnShield");
+        if (Bukkit.isPrimaryThread()) {
+            getWorld().loadChunk(getX(), getZ(), true);
+            return;
+        }
+        Future<Void> future = Bukkit.getScheduler().callSyncMethod(plugin, new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+                load();
+                return null;
+            }
+        });
+        while (true) {
+            try {
+                future.get();
+                break;
+            } catch (InterruptedException ignored) {
+            } catch (ExecutionException e) {
+                Throwables.propagate(e);
+            }
+        }
+    }
+
 }

@@ -22,18 +22,25 @@
  */
 package net.techcable.spawnshield.compat;
 
-import com.google.common.base.Preconditions;
-import lombok.experimental.Wither;
+import lombok.*;
+import lombok.experimental.*;
+
+import net.techcable.spawnshield.nms.ChunkNotLoadedException;
+import net.techcable.spawnshield.nms.NMS;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 
-import lombok.*;
+import com.google.common.base.Preconditions;
 
 @RequiredArgsConstructor
 @Getter
 @EqualsAndHashCode(of = {"x", "y", "z", "world"})
 public class BlockPos {
+
+    @Setter
+    private static NMS nmsImplementation;
 
     public BlockPos(Location l) {
         this(l.getBlockX(), l.getBlockY(), l.getBlockZ(), l.getWorld());
@@ -52,16 +59,40 @@ public class BlockPos {
         return square(x - other.x) + square(y - other.y) + square(z - other.z);
     }
 
-    public Material getTypeAt() {
-        return Material.getMaterial(getWorld().getBlockTypeIdAt(getX(), getY(), getZ()));
+    public Material getTypeAt() throws ChunkNotLoadedException {
+        int blockId;
+        if (nmsImplementation == null) {
+            blockId = getWorld().getBlockTypeIdAt(getX(), getY(), getZ());
+        } else {
+            blockId = nmsImplementation.getDirectId(this);
+        }
+        return Material.getMaterial(blockId);
     }
 
-    public byte getDataAt() {
-        return getWorld().getBlockAt(getX(), getY(), getZ()).getData();
+    public byte getDataAt() throws ChunkNotLoadedException {
+        int data;
+        if (nmsImplementation == null) {
+            data = getWorld().getBlockAt(getX(), getY(), getZ()).getData();
+        } else {
+            data = nmsImplementation.getDirectId(this);
+        }
+        return (byte) data;
     }
 
     @Getter(lazy = true)
     private final ChunkPos chunkPos = new ChunkPos(getX() >> 4, getZ() >> 4, getWorld());
+
+    public int getRelativeX() {
+        return getChunkPos().getRelativeX(this);
+    }
+
+    public int getRelativeZ() {
+        return getChunkPos().getRelativeZ(this);
+    }
+
+    public int getSection() {
+        return getChunkPos().getSection(this);
+    }
 
     private static int square(int i) {
         return i * i;

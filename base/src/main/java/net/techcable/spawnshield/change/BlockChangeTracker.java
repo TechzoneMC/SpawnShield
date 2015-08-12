@@ -49,11 +49,12 @@ public class BlockChangeTracker {
     }
 
     public void flush() {
+        NMS nms = Utils.getNms();
         for (ChunkPos chunk : changes.keySet()) {
             Collection<BlockChange> changeList = changes.get(chunk);
-            NMS nms = Utils.getNms();
             nms.sendMultiBlockChange(player, chunk, changeList);
         }
+        nms.flushQueue(player);
         this.changes.clear();
     }
 }

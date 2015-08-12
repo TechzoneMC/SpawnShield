@@ -22,11 +22,21 @@
  */
 package net.techcable.spawnshield.nms;
 
-import net.techcable.spawnshield.compat.ChunkPos;
-import org.bukkit.entity.Player;
-
 import java.util.Collection;
 
+import net.techcable.spawnshield.compat.BlockPos;
+import net.techcable.spawnshield.compat.ChunkPos;
+
+import org.bukkit.entity.Player;
+
 public interface NMS {
+
     public void sendMultiBlockChange(Player player, ChunkPos chunkPos, Collection<BlockChange> changes);
+
+    void flushQueue(Player player);
+
+    public int getDirectId(BlockPos pos) throws ChunkNotLoadedException;
+
+    public int getDirectMeta(BlockPos pos) throws ChunkNotLoadedException;
+
 }
