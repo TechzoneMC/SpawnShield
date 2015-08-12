@@ -53,7 +53,7 @@ public class Utils {
                     Constructor constructor = nmsClazz == null ? null : Reflection.makeConstructor(nmsClazz);
                     if (constructor == null) {
                         warning("This version of minecraft is unsupported");
-                        warning("Forcefields will be less efficient, and players will be spammed with packets");
+                        warning("The plugin will still work but forcefields will be less efficient, and players will be spammed with packets");
                         nms = new NMS() {
                             @Override
                             public void sendMultiBlockChange(Player player, ChunkPos chunkPos, Collection<BlockChange> changes) {

@@ -77,7 +77,7 @@ public class SpawnShieldExecutor implements CommandExecutor {
                     hasRegion = true;
                     Region region = plugin.getRegion(world, regionName);
                     SpawnShield.getInstance().getSettings().addRegionToBlock(region);
-                    sender.sendMessage("Successfuly blocked region " + regionName + " in " + worldName);
+                    sender.sendMessage("Successfully blocked region " + regionName + " in " + worldName);
                 }
                 if (!hasRegion) {
                     sender.sendMessage("Region not found");
@@ -104,7 +104,7 @@ public class SpawnShieldExecutor implements CommandExecutor {
                     SpawnShield.getInstance().getSettings().removeRegionToBlock(region);
                 }
                 if (hasRegion) {
-                    sender.sendMessage("Successfuly unblocked region " + regionName + " in " + worldName);
+                    sender.sendMessage("Successfully unblocked region " + regionName + " in " + worldName);
                 } else {
                     sender.sendMessage("Unknown region");
                 }

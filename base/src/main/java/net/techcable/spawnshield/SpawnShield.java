@@ -56,7 +56,8 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
     protected void startup() {
         Utils.info("Loading SpawnShield by Techcable");
         if (!CombatAPI.isInstalled()) {
-            Utils.severe("No Combat Tagging Plugin Installed");
+            Utils.severe("No supported Combat Tagging plugin found");
+            Utils.severe("Please install either CombatTag, CombatTagPlus, or PvPManager");
             Utils.severe("Shutting down");
             setEnabled(false);
             return;
@@ -101,7 +102,7 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
         if (Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
             String version = Bukkit.getPluginManager().getPlugin("WorldGuard").getDescription().getVersion();
             if (version.startsWith("6")) {
-                Utils.info("Worldguard 6 Detected, Activatin support");
+                Utils.info("WorldGuard 6 Detected, Activating support");
                 WorldGuard6Plugin hook = new WorldGuard6Plugin();
                 getSettings().addProtectionPlugin(hook);
                 numPluginsAdded++;
@@ -115,7 +116,6 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
         getCommand("spawnshield").setExecutor(new SpawnShieldExecutor());
         switch (settings.getMode()) {
             case FORCEFIELD :
-                Utils.warning("Force field mode is currently unsupported");
                 this.forceFieldListener = new ForceFieldListener();
                 registerListener(forceFieldListener);
                 this.forceFieldUpdateTask = new ForceFieldUpdateTask();
