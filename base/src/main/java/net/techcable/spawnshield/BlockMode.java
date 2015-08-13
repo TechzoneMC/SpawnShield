@@ -37,33 +37,4 @@ public enum BlockMode {
     public String toString() {
         return name().toLowerCase();
     }
-
-    public static class BlockModeConverter implements ConfigSerializer<BlockMode> {
-
-        @Override
-        public Object serialize(BlockMode blockMode, Annotation[] annotations) {
-            return blockMode.toString();
-        }
-
-        @Override
-        public BlockMode deserialize(Object o, Class<? extends BlockMode> type, Annotation[] annotations) throws InvalidConfigurationException {
-            if (!(o instanceof String)) throw new InvalidConfigurationException("block mode must be a string");
-            String name = (String) o;
-            try {
-                return BlockMode.valueOf(name.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                throw new InvalidConfigurationException(name + " is not a valid mode for SpawnShield");
-            }
-        }
-
-        @Override
-        public boolean canDeserialize(Class<?> aClass) {
-            return aClass == String.class;
-        }
-
-        @Override
-        public boolean canSerialize(Class<?> aClass) {
-            return BlockMode.class.equals(aClass);
-        }
-    }
 }

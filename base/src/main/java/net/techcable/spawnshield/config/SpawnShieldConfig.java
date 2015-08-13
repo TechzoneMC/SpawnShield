@@ -22,26 +22,8 @@
  */
 package net.techcable.spawnshield.config;
 
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Synchronized;
-import net.techcable.spawnshield.BlockMode;
-import net.techcable.spawnshield.BlockMode.BlockModeConverter;
-import net.techcable.spawnshield.SpawnShield;
-import net.techcable.spawnshield.Utils;
-import net.techcable.spawnshield.compat.ProtectionPlugin;
-import net.techcable.spawnshield.compat.Region;
-import net.techcable.techutils.collect.Pair;
-import net.techcable.techutils.config.AnnotationConfig;
-import net.techcable.techutils.config.Setting;
+import lombok.*;
 
-import org.bukkit.Bukkit;
-import org.bukkit.World;
-
-import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -49,11 +31,20 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import net.techcable.spawnshield.BlockMode;
+import net.techcable.spawnshield.Utils;
+import net.techcable.spawnshield.compat.ProtectionPlugin;
+import net.techcable.spawnshield.compat.Region;
+import net.techcable.techutils.config.AnnotationConfig;
+import net.techcable.techutils.config.Setting;
+
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+
+import com.google.common.collect.Sets;
+
 @Getter
 public class SpawnShieldConfig extends AnnotationConfig {
-    static {
-        addSerializer(new BlockModeConverter());
-    }
 
     public void addRegionToBlock(Region r) {
         Utils.assertMainThread();
@@ -112,6 +103,7 @@ public class SpawnShieldConfig extends AnnotationConfig {
      * Because AFAIK, it isn't transient, causing it to be serialized to config
      */
     private final transient Object lock = new Object();
+
     public Collection<Region> getRegionsToBlock() { // A devious combination of double checked locking and lazy initialization
         if (cachedRegionsToBlock != null) return cachedRegionsToBlock;
         synchronized (lock) {
