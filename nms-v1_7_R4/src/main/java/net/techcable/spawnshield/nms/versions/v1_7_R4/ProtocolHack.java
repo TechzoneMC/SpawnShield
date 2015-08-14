@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.techcable.spawnshield.nms.versions.v1_8_R1;
+package net.techcable.spawnshield.nms.versions.v1_7_R4;
 
 import lombok.*;
 

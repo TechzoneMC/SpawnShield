@@ -34,6 +34,11 @@
         <!-- NMS Version Compatibility -->
         <dependency>
             <groupId>net.techcable.spawnshield</groupId>
+            <artifactId>nms-v1_7_R4</artifactId>
+            <version>${parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.techcable.spawnshield</groupId>
             <artifactId>nms-v1_8_R1</artifactId>
             <version>${parent.version}</version>
         </dependency>
