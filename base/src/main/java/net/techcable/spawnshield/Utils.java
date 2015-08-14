@@ -63,9 +63,6 @@ public class Utils {
                             }
 
                             @Override
-                            public void flushQueue(Player player) {}
-
-                            @Override
                             public int getDirectId(BlockPos pos) throws ChunkNotLoadedException {
                                 assertLoaded(pos);
                                 return pos.getWorld().getBlockTypeIdAt(pos.getX(), pos.getY(), pos.getZ());

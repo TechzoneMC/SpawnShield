@@ -54,7 +54,6 @@ public class BlockChangeTracker {
             Collection<BlockChange> changeList = changes.get(chunk);
             nms.sendMultiBlockChange(player, chunk, changeList);
         }
-        nms.flushQueue(player);
         this.changes.clear();
     }
 }

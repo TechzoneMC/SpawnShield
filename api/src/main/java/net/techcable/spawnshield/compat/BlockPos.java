@@ -28,9 +28,11 @@ import lombok.experimental.*;
 import net.techcable.spawnshield.nms.ChunkNotLoadedException;
 import net.techcable.spawnshield.nms.NMS;
 
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 
 import com.google.common.base.Preconditions;
 
@@ -62,7 +64,7 @@ public class BlockPos {
     public Material getTypeAt() throws ChunkNotLoadedException {
         int blockId;
         if (nmsImplementation == null) {
-            blockId = getWorld().getBlockTypeIdAt(getX(), getY(), getZ());
+            blockId = getBlock().getTypeId();
         } else {
             blockId = nmsImplementation.getDirectId(this);
         }
@@ -72,11 +74,17 @@ public class BlockPos {
     public byte getDataAt() throws ChunkNotLoadedException {
         int data;
         if (nmsImplementation == null) {
-            data = getWorld().getBlockAt(getX(), getY(), getZ()).getData();
+            data = getBlock().getData();
         } else {
             data = nmsImplementation.getDirectId(this);
         }
         return (byte) data;
+    }
+
+    private Block getBlock() throws ChunkNotLoadedException {
+        Chunk chunk = getChunkPos().getChunkIfLoaded();
+        if (chunk == null) throw new ChunkNotLoadedException();
+        return chunk.getBlock(getRelativeX(), getY(), getRelativeZ());
     }
 
     @Getter(lazy = true)
