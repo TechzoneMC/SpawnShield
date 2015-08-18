@@ -51,7 +51,7 @@ public class TeleportSafezoningTask extends BukkitRunnable {
                             playerEntity.sendMessage(SpawnShieldMessages.getInstance().getCantEnterSafezone());
                             player.setLastCantEnterMessageTime(System.currentTimeMillis());
                         }
-                        playerEntity.teleport(player.getLastLocationOutsideSafezone(), PlayerTeleportEvent.TeleportCause.PLUGIN);
+                        player.teleport(player.getLastLocationOutsideSafezone(), true);
                     }
                 }
             } else {

@@ -30,6 +30,7 @@ import net.techcable.techutils.collect.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -51,7 +52,11 @@ public class KnockbackTask extends BukkitRunnable {
                 }
                 Vector knockback = player.getLastLocationOutsideSafezone().toVector().subtract(playerEntity.getLocation().toVector());
                 playerEntity.getLocation().setDirection(knockback);
-                playerEntity.setVelocity(knockback);
+                Entity toKnockback = playerEntity;
+                while (toKnockback.getVehicle() != null) {
+                    toKnockback = toKnockback.getVehicle();
+                }
+                toKnockback.setVelocity(knockback);
             } else {
                 player.setLastLocationOutsideSafezone(playerEntity.getLocation());
             }

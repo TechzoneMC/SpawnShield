@@ -51,7 +51,7 @@ public class CombatAPI {
      * @param player the player to check
      * @return true if combat tagged
      *
-     * @deprecated please use
+     * @deprecated please use {@link SpawnShieldPlayer#isBlocked()}
      */
     @Deprecated
     public static boolean isTagged(Player player) {
