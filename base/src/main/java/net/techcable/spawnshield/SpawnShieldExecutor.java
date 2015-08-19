@@ -22,7 +22,7 @@
  */
 package net.techcable.spawnshield;
 
-import net.techcable.spawnshield.compat.ProtectionPlugin;
+import lombok.RequiredArgsConstructor;
 import net.techcable.spawnshield.compat.Region;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -31,7 +31,13 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
+@RequiredArgsConstructor
 public class SpawnShieldExecutor implements CommandExecutor {
+    private final SpawnShield plugin;
+
+    public RegionManager getRegionManager() {
+        return plugin.getRegionManager();
+    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -71,15 +77,16 @@ public class SpawnShieldExecutor implements CommandExecutor {
                     sender.sendMessage("World " + worldName + " is not known");
                     return true;
                 }
-                boolean hasRegion = false;
-                for (ProtectionPlugin plugin : SpawnShield.getInstance().getSettings().getPlugins()) {
-                    if (!plugin.hasRegion(world, regionName)) continue;;
-                    hasRegion = true;
-                    Region region = plugin.getRegion(world, regionName);
-                    SpawnShield.getInstance().getSettings().addRegionToBlock(region);
-                    sender.sendMessage("Successfully blocked region " + regionName + " in " + worldName);
-                }
-                if (!hasRegion) {
+                boolean hasRegion = getRegionManager().hasRegion(regionName, world);
+                if (hasRegion) {
+                    Region region = getRegionManager().getRegion(regionName, world);
+                    if (!getRegionManager().getBlockedRegions().contains(region)) {
+                        getRegionManager().addRegionToBlock(region);
+                        sender.sendMessage("Blocked region " + region.getName());
+                    } else {
+                        sender.sendMessage("Already blocked");
+                    }
+                } else {
                     sender.sendMessage("Region not found");
                 }
                 return true;
@@ -96,24 +103,23 @@ public class SpawnShieldExecutor implements CommandExecutor {
                     sender.sendMessage("World " + worldName + " is not known");
                     return true;
                 }
-                boolean hasRegion = false;
-                for (ProtectionPlugin plugin : SpawnShield.getInstance().getSettings().getPlugins()) {
-                    if (!plugin.hasRegion(world, regionName)) continue;;
-                    hasRegion = true;
-                    Region region = plugin.getRegion(world, regionName);
-                    SpawnShield.getInstance().getSettings().removeRegionToBlock(region);
-                }
-                if (hasRegion) {
-                    sender.sendMessage("Successfully unblocked region " + regionName + " in " + worldName);
+                boolean hasRegion = getRegionManager().hasRegion(regionName, world);
+                if (hasRegion) { // we have a region
+                    Region region = getRegionManager().getRegion(regionName, world);
+                    if (getRegionManager().getBlockedRegions().contains(region)) {
+                        sender.sendMessage("Unblocking Region");
+                        getRegionManager().removeRegionToBlock(region);
+                    } else {
+                        sender.sendMessage("Not blocked");
+                    }
                 } else {
                     sender.sendMessage("Unknown region");
                 }
                 return true;
             } else if (subSubCommand.equalsIgnoreCase("list")) {
                 sender.sendMessage(color("&b Blocked Regions"));
-                for (Region region : SpawnShield.getInstance().getSettings().getRegionsToBlock()) {
-                    sender.sendMessage("&7Region&r " + region.getName() + " &7in world&r " + region.getWorld().getName());
-                }
+                getRegionManager()
+                        .forEach((region) -> sender.sendMessage("&7Region&r " + region.getName() + " &7in world&r " + region.getWorld().getName()));
                 return true;
             } else {
                 sender.sendMessage(subSubCommand + " is not a valid sub command of /spawnshield block");

@@ -25,6 +25,7 @@ package net.techcable.spawnshield.tasks;
 import net.techcable.spawnshield.CombatAPI;
 import net.techcable.spawnshield.SpawnShield;
 import net.techcable.spawnshield.SpawnShieldPlayer;
+import net.techcable.spawnshield.compat.BlockPos;
 import net.techcable.spawnshield.compat.Region;
 import net.techcable.techutils.collect.Pair;
 import org.bukkit.Bukkit;
@@ -63,10 +64,7 @@ public class KnockbackTask extends BukkitRunnable {
         }
     }
 
-    public boolean isBlocked(Location l) {
-        for (Region r : SpawnShield.getInstance().getSettings().getRegionsToBlock()) {
-            if (r.contains(l.getBlockX(), l.getBlockY(), l.getBlockZ())) return true;
-        }
-        return false;
+    public boolean isBlocked(Location loc) {
+        return SpawnShield.getInstance().getRegionManager().isBlocked(new BlockPos(loc));
     }
 }

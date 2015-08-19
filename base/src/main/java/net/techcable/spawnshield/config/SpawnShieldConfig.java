@@ -24,6 +24,9 @@ package net.techcable.spawnshield.config;
 
 import lombok.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -32,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import net.techcable.spawnshield.BlockMode;
+import net.techcable.spawnshield.RegionManager;
 import net.techcable.spawnshield.Utils;
 import net.techcable.spawnshield.compat.ProtectionPlugin;
 import net.techcable.spawnshield.compat.Region;
@@ -42,24 +46,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 
 import com.google.common.collect.Sets;
+import org.bukkit.configuration.InvalidConfigurationException;
 
 @Getter
+@RequiredArgsConstructor
 public class SpawnShieldConfig extends AnnotationConfig {
-
-    public void addRegionToBlock(Region r) {
-        Utils.assertMainThread();
-        blockRegions.add(r.getName());
-        refreshRegionsToBlock();
-    }
-
-    public void removeRegionToBlock(Region r) {
-        Utils.assertMainThread();
-        blockRegions.remove(r.getName());
-        refreshRegionsToBlock();
-    }
+    private final RegionManager regionManager;
 
     @Setting("blockRegions")
-    @Getter(AccessLevel.NONE) //Use the cached and thread safe version
+    @Getter
     private List<String> blockRegions;
 
     @Setting("mode")
@@ -71,22 +66,21 @@ public class SpawnShieldConfig extends AnnotationConfig {
     @Setting("force-field.range")
     private int forceFieldRange;
 
-    @Synchronized("lock")
-    public void refreshRegionsToBlock() {
-        this.cachedRegionsToBlock = null;
-    }
-
-    @Getter(AccessLevel.NONE)
-    private transient Set<Region> cachedRegionsToBlock;
-
-    @Synchronized("lock")
-    public void addProtectionPlugin(ProtectionPlugin plugin) {
-        plugins.add(plugin);
-    }
-
     @Setting("afterCombatDelay")
     @Getter(AccessLevel.NONE)
     private int afterCombatDelay;
+
+    @Override
+    public void load(File configFile, URL defaultConfigUrl) throws IOException, InvalidConfigurationException {
+        super.load(configFile, defaultConfigUrl);
+        regionManager.refresh(this);
+    }
+
+    @Override
+    public void save(File configFile, URL defaultConfigUrl) throws IOException, InvalidConfigurationException {
+        regionManager.saveConfig(this);
+        super.save(configFile, defaultConfigUrl);
+    }
 
     /**
      * Get the delay in milliseconds players must wait after being tagged until they can re-enter spawn
@@ -94,37 +88,6 @@ public class SpawnShieldConfig extends AnnotationConfig {
      * @return the delay in millesconds
      */
     public long getAfterCombatDelay() {
-        return TimeUnit.MINUTES.toMillis(afterCombatDelay);
-    }
-
-    private final Set<ProtectionPlugin> plugins = new HashSet<>();
-    /**
-     * Why not let the @Synchronised annotation create the lock for me?
-     * Because AFAIK, it isn't transient, causing it to be serialized to config
-     */
-    private final transient Object lock = new Object();
-
-    public Collection<Region> getRegionsToBlock() { // A devious combination of double checked locking and lazy initialization
-        if (cachedRegionsToBlock != null) return cachedRegionsToBlock;
-        synchronized (lock) {
-            if (cachedRegionsToBlock != null) return cachedRegionsToBlock;
-            cachedRegionsToBlock = Sets.newSetFromMap(new ConcurrentHashMap<Region, Boolean>());
-            Set<String> notFound = Sets.newHashSet(blockRegions);
-            for (ProtectionPlugin plugin : plugins) {
-                for (World world : Bukkit.getWorlds()) {
-                    for (String regionName : blockRegions) {
-                        if (!plugin.hasRegion(world, regionName)) continue;
-                        Region region = plugin.getRegion(world, regionName);
-                        notFound.remove(regionName); //We found it !!
-                        cachedRegionsToBlock.add(region);
-                    }
-                }
-            }
-            //Warn if we couldn't find a worldguard region
-            for (String regionName : notFound) {
-                Utils.warning(regionName + " is not a known region");
-            }
-            return cachedRegionsToBlock;
-        }
+        return TimeUnit.SECONDS.toMillis(afterCombatDelay);
     }
 }

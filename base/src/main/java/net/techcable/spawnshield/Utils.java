@@ -23,9 +23,9 @@
 package net.techcable.spawnshield;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-
 import net.techcable.spawnshield.compat.BlockPos;
 import net.techcable.spawnshield.compat.ChunkPos;
 import net.techcable.spawnshield.nms.BlockChange;
@@ -38,12 +38,14 @@ import org.bukkit.entity.Player;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.logging.Level;
+import java.util.stream.Collector;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Utils {
 
     private static NMS nms;
     private static final Object nmsInitLock = new Object();
+
     public static NMS getNms() {
         if (nms == null) {
             synchronized (nmsInitLock) {
@@ -113,4 +115,9 @@ public class Utils {
     public static void assertMainThread() {
         Preconditions.checkState(Bukkit.isPrimaryThread(), "Should only be called on the primary thread");
     }
+
+    public static <T> Collector<T, ?, ImmutableSet<T>> toImmutableSet() {
+        return Collector.<T, ImmutableSet.Builder<T>, ImmutableSet<T>>of(ImmutableSet::builder, ImmutableSet.Builder::add, (b1, b2) -> b1.addAll(b2.build()), ImmutableSet.Builder::build);
+    }
+
 }

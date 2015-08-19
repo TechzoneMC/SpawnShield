@@ -50,6 +50,11 @@ public class WorldGuard6Plugin implements ProtectionPlugin {
     }
 
     @Override
+    public boolean isWorldSpecific() {
+        return true;
+    }
+
+    @Override
     public boolean hasRegion(World world, String name) {
         RegionManager manager = WGBukkit.getRegionManager(world);
         return manager.hasRegion(name);

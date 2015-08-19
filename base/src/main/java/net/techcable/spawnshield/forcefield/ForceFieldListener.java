@@ -22,18 +22,14 @@
  */
 package net.techcable.spawnshield.forcefield;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.MoreExecutors;
-import net.techcable.spawnshield.CombatAPI;
+import com.google.common.collect.ImmutableSet;
+import lombok.RequiredArgsConstructor;
 import net.techcable.spawnshield.SpawnShield;
 import net.techcable.spawnshield.SpawnShieldPlayer;
 import net.techcable.spawnshield.change.BlockChangeTracker;
 import net.techcable.spawnshield.compat.BlockPos;
 import net.techcable.spawnshield.compat.Region;
 import net.techcable.spawnshield.nms.ChunkNotLoadedException;
-import net.techcable.spawnshield.tasks.ForceFieldUpdateTask;
-import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -44,12 +40,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentMap;
 
+@RequiredArgsConstructor
 public class ForceFieldListener implements Listener {
-
+    private final SpawnShield plugin;
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onMove(PlayerMoveEvent event) {
@@ -78,11 +72,7 @@ public class ForceFieldListener implements Listener {
             return;
         }
         BlockPos pos = new BlockPos(player.getEntity().getLocation());
-        Collection<Region> toUpdate = new HashSet<>();
-        for (Region region : SpawnShield.getInstance().getSettings().getRegionsToBlock()) {
-            if (!region.getWorld().equals(event.getPlayer().getWorld())) continue; //We dont need this one: Yay!
-            toUpdate.add(region);
-        }
+        ImmutableSet<Region> toUpdate = plugin.getRegionManager().getBlockedRegions();
         ForceFieldUpdateRequest request = new ForceFieldUpdateRequest(pos, toUpdate, player, SpawnShield.getInstance().getSettings().getForceFieldRange());
         SpawnShield.getInstance().request(request);
     }

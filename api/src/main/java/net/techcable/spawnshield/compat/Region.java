@@ -34,4 +34,6 @@ public interface Region {
     public BlockPos getMin();
     public BlockPos getMax();
     public String getName();
+    public int hashCode();
+    public boolean equals(Object other);
 }

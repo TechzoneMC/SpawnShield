@@ -26,5 +26,6 @@ import org.bukkit.World;
 
 public interface ProtectionPlugin {
     public Region getRegion(World world, String name);
+    public boolean isWorldSpecific();
     public boolean hasRegion(World world, String name);
 }

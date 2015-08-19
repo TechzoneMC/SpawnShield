@@ -51,6 +51,8 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
     private TeleportSafezoningTask teleportSafezoningTask;
     private KnockbackTask knockbackTask;
     private ForceFieldUpdateTask forceFieldUpdateTask;
+    // Managers
+    private RegionManager regionManager;
 
     @Override
     protected void startup() {
@@ -62,7 +64,8 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
             setEnabled(false);
             return;
         }
-        settings = new SpawnShieldConfig();
+        regionManager = new RegionManager();
+        settings = new SpawnShieldConfig(regionManager);
         messages = new SpawnShieldMessages();
         try {
             settings.load(new File(getDataFolder(), "config.yml"), SpawnShield.class.getResource("/config.yml"));
@@ -104,7 +107,7 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
             if (version.startsWith("6")) {
                 Utils.info("WorldGuard 6 Detected, Activating support");
                 WorldGuard6Plugin hook = new WorldGuard6Plugin();
-                getSettings().addProtectionPlugin(hook);
+                getRegionManager().addProtectionPlugin(hook);
                 numPluginsAdded++;
             }
         }
@@ -113,10 +116,10 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
             setEnabled(false);
             return;
         }
-        getCommand("spawnshield").setExecutor(new SpawnShieldExecutor());
+        getCommand("spawnshield").setExecutor(new SpawnShieldExecutor(this));
         switch (settings.getMode()) {
             case FORCEFIELD :
-                this.forceFieldListener = new ForceFieldListener();
+                this.forceFieldListener = new ForceFieldListener(this);
                 registerListener(forceFieldListener);
                 this.forceFieldUpdateTask = new ForceFieldUpdateTask();
                 forceFieldUpdateTask.runTaskTimerAsynchronously(this, 1, 0); //Every single tick
