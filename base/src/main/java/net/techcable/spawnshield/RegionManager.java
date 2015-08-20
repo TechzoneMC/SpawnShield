@@ -26,6 +26,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import java8.util.stream.StreamSupport;
 import net.techcable.spawnshield.compat.BlockPos;
 import net.techcable.spawnshield.compat.ProtectionPlugin;
 import net.techcable.spawnshield.compat.Region;
@@ -36,10 +37,10 @@ import org.bukkit.World;
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
+import java8.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java8.util.stream.Collectors;
 
 public class RegionManager {
     private final Set<Region> regions = Sets.newSetFromMap(new ConcurrentHashMap<>());
@@ -50,7 +51,7 @@ public class RegionManager {
     }
 
     public void refresh(Collection<String> regionNames) {
-        Set<Region> regions = regionNames.stream().
+        Set<Region> regions = StreamSupport.stream(regionNames).
                 map(this::createRegion)
                 .filter((r) -> r != null)
                 .collect(Collectors.toSet());
@@ -81,7 +82,7 @@ public class RegionManager {
      * @return the last known names of the regions in this map
      */
     public ImmutableCollection<String> getNames() {
-        return regions.stream().map(RegionManager::getName).collect(Utils.toImmutableSet());
+        return StreamSupport.stream(regions).map(RegionManager::getName).collect(Utils.toImmutableSet());
     }
 
     public boolean isBlocked(BlockPos pos) {
@@ -127,7 +128,7 @@ public class RegionManager {
     }
 
     public void forEach(Consumer<Region> region) {
-        regions.forEach(region);
+        StreamSupport.stream(regions).forEach(region);
     }
 
     private Region createRegion(String name) {

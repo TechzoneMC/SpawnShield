@@ -24,6 +24,7 @@ package net.techcable.spawnshield;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
+import java8.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.techcable.spawnshield.compat.BlockPos;
@@ -38,7 +39,7 @@ import org.bukkit.entity.Player;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.logging.Level;
-import java.util.stream.Collector;
+import java8.util.stream.Collector;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Utils {
@@ -117,7 +118,7 @@ public class Utils {
     }
 
     public static <T> Collector<T, ?, ImmutableSet<T>> toImmutableSet() {
-        return Collector.<T, ImmutableSet.Builder<T>, ImmutableSet<T>>of(ImmutableSet::builder, ImmutableSet.Builder::add, (b1, b2) -> b1.addAll(b2.build()), ImmutableSet.Builder::build);
+        return Collectors.<T, ImmutableSet.Builder<T>, ImmutableSet<T>>of(ImmutableSet::builder, ImmutableSet.Builder::add, (b1, b2) -> b1.addAll(b2.build()), ImmutableSet.Builder::build);
     }
 
 }
