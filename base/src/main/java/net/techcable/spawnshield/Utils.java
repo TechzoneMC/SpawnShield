@@ -104,9 +104,13 @@ public class Utils {
     }
 
     public static void debug(String msg) {
-        if (SpawnShield.getInstance().getSettings().isDebug()) {
+        if (isDebug()) {
             info(msg);
         }
+    }
+
+    public static boolean isDebug() {
+        return SpawnShield.getInstance().getSettings().isDebug();
     }
 
     public static void info(String msg) {

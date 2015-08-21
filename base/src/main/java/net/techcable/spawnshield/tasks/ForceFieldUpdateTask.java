@@ -26,6 +26,7 @@ import com.google.common.collect.*;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import lombok.RequiredArgsConstructor;
+import net.techcable.spawnshield.SpawnShieldPlayer;
 import net.techcable.spawnshield.Utils;
 import net.techcable.spawnshield.change.BlockChangeTracker;
 import net.techcable.spawnshield.compat.BlockPos;
@@ -51,6 +52,14 @@ public class ForceFieldUpdateTask extends BukkitRunnable {
         requests.put(request.getPlayer().getId(), request);
     }
 
+    public boolean hasRequest(UUID id) {
+        return requests.get(id) != null;
+    }
+
+    public boolean hasRequest(SpawnShieldPlayer player) {
+        return hasRequest(player.getId());
+    }
+
     public void clearRequest(UUID id) {
         requests.remove(id);
     }
@@ -63,12 +72,7 @@ public class ForceFieldUpdateTask extends BukkitRunnable {
             return MoreExecutors.sameThreadExecutor();
         } else {
             int numExecutors = Math.max(2, Runtime.getRuntime().availableProcessors() - 2);
-            return MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(numExecutors, new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable r) {
-                    return new Thread(r, "SpawnShield Forcefield Worker");
-                }
-            }));
+            return MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(numExecutors, r -> new Thread(r, "SpawnShield Forcefield Worker")));
         }
     }
 
@@ -78,15 +82,12 @@ public class ForceFieldUpdateTask extends BukkitRunnable {
         for (UUID playerId : requests.keySet()) {
             final ForceFieldUpdateRequest request = requests.get(playerId);
             if (request == null) continue;
-            executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    numExecuting++;
-                    try {
-                        runRequest(request);
-                    } finally {
-                        numExecuting--;
-                    }
+            executor.submit(() -> {
+                numExecuting++;
+                try {
+                    runRequest(request);
+                } finally {
+                    numExecuting--;
                 }
             });
         }

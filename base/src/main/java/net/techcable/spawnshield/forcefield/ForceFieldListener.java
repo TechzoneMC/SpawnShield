@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import lombok.RequiredArgsConstructor;
 import net.techcable.spawnshield.SpawnShield;
 import net.techcable.spawnshield.SpawnShieldPlayer;
+import net.techcable.spawnshield.Utils;
 import net.techcable.spawnshield.change.BlockChangeTracker;
 import net.techcable.spawnshield.compat.BlockPos;
 import net.techcable.spawnshield.compat.Region;
@@ -40,22 +41,30 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 public class ForceFieldListener implements Listener {
     private final SpawnShield plugin;
+    private long lastMsg;
+    private static final long MSG_RATE_LIMIT = TimeUnit.MINUTES.toMillis(1);
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onMove(PlayerMoveEvent event) {
         if (event.getFrom().equals(event.getTo())) return; //Don't wanna fire if the player turned his head
         final SpawnShieldPlayer player = SpawnShield.getInstance().getPlayer(event.getPlayer());
         if (!player.isBlocked()) {
+            if (Utils.isDebug() && System.currentTimeMillis() - lastMsg >= MSG_RATE_LIMIT) {
+                Utils.debug("Player is not tagged");
+                lastMsg = System.currentTimeMillis();
+            }
             SpawnShield.getInstance().clearRequest(event.getPlayer().getUniqueId());
             if (player.getLastShownBlocks() != null) {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
                         if (player.getLastShownBlocks() == null) return;
+                        Utils.debug("Clearing fake blocks for " + player.getName());
                         BlockChangeTracker tracker = new BlockChangeTracker(player.getEntity());
                         for (BlockPos lastShown : player.getLastShownBlocks()) {
                             try {
@@ -71,9 +80,16 @@ public class ForceFieldListener implements Listener {
             }
             return;
         }
+        if (Utils.isDebug() && System.currentTimeMillis() - lastMsg >= MSG_RATE_LIMIT) {
+            Utils.debug("Player is tagged");
+            lastMsg = System.currentTimeMillis();
+        }
         BlockPos pos = new BlockPos(player.getEntity().getLocation());
         ImmutableSet<Region> toUpdate = plugin.getRegionManager().getBlockedRegions();
         ForceFieldUpdateRequest request = new ForceFieldUpdateRequest(pos, toUpdate, player, SpawnShield.getInstance().getSettings().getForceFieldRange());
+        if (!plugin.getForceFieldUpdateTask().hasRequest(player)) {
+            Utils.debug("New request for player " + player.getName());
+        }
         SpawnShield.getInstance().request(request);
     }
 

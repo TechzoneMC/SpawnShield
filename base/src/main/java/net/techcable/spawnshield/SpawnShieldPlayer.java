@@ -53,7 +53,7 @@ public class SpawnShieldPlayer extends TechPlayer {
     @SuppressWarnings("depreciation")
     public boolean isBlocked() {
         if (CombatAPI.isTagged(getEntity())) {
-            lastTagTime = CombatAPI.getRemainingTagTime(getEntity());
+            lastTagTime = CombatAPI.getRemainingTagTime(getEntity()) + System.currentTimeMillis();
             return true;
         } else {
             long delay = getPlugin().getSettings().getAfterCombatDelay();
