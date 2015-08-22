@@ -128,7 +128,7 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
 
     @Override
     protected void shutdown() {
-        getSettings().save();
+        if (getSettings() != null) getSettings().save();
     }
 
     @Override

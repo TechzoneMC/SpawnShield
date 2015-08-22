@@ -44,25 +44,29 @@
             <groupId>net.techcable.spawnshield</groupId>
             <artifactId>worldguard6</artifactId>
             <version>${project.parent.version}</version>
+            <optional>true</optional>
         </dependency>
         <!-- CombatTag Plugin Compatibility -->
         <dependency>
             <groupId>net.techcable.spawnshield</groupId>
             <artifactId>combat-tag</artifactId>
             <version>${project.parent.version}</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>net.techcable.spawnshield</groupId>
             <artifactId>combat-tag-plus</artifactId>
             <version>${project.parent.version}</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>net.techcable.spawnshield</groupId>
             <artifactId>pvp-manager</artifactId>
             <version>${project.parent.version}</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

@@ -37,7 +37,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @RequiredArgsConstructor
-public class MultiPluginCombatTagPlugin implements CombatTagPlugin {
+public final class MultiPluginCombatTagPlugin implements CombatTagPlugin {
     private final Set<CombatTagPlugin> plugins;
 
     @Override

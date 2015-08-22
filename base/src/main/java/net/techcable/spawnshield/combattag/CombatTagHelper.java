@@ -43,7 +43,9 @@ import java.util.Set;
 import java.util.UUID;
 
 import net.techcable.techutils.Reflection;
+import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
+import org.reflections.util.ClasspathHelper;
 
 import javax.annotation.Nullable;
 
@@ -93,17 +95,11 @@ public class CombatTagHelper {
 
     public static Set<CombatTagPlugin> findInstalled() {
         Set<CombatTagPlugin> installed = new HashSet<>();
-        String className = MultiPluginCombatTagPlugin.class.getName();
+        String className = CombatTagHelper.class.getName();
         String packageName = className.substring(0, className.lastIndexOf('.') - 1);
-        Reflections reflections = new Reflections(packageName);
-        Set<Class<? extends CombatTagPlugin>> pluginTypes = reflections.getSubTypesOf(CombatTagPlugin.class);
-        pluginTypes = Sets.filter(pluginTypes, new Predicate<Class<? extends CombatTagPlugin>>() {
-            @Override
-            public boolean apply(@Nullable Class<? extends CombatTagPlugin> aClass) {
-                return !MultiPluginCombatTagPlugin.class.isAssignableFrom(aClass);
-            }
-        });
+        Set<Class<? extends CombatTagPlugin>> pluginTypes = new Reflections(packageName).getSubTypesOf(CombatTagPlugin.class);
         for (Class<? extends CombatTagPlugin> pluginType : pluginTypes) {
+            if (pluginType == MultiPluginCombatTagPlugin.class) continue;
             CombatTagPlugin plugin;
             try {
                 Constructor<? extends CombatTagPlugin> c = pluginType.getConstructor();
