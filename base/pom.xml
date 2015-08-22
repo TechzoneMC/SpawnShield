@@ -20,6 +20,13 @@
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
+        <!-- The current version of TechUtils doesn't include Yamler -->
+        <dependency>
+            <groupId>net.cubespace</groupId>
+            <artifactId>Yamler-Core</artifactId>
+            <version>2.3.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
         <!-- Classpath Scanning -->
         <dependency>
             <groupId>org.reflections</groupId>

@@ -22,9 +22,9 @@
  */
 package net.techcable.spawnshield;
 
-import lombok.RequiredArgsConstructor;
-import net.techcable.techutils.yamler.InternalConverter;
-import net.techcable.techutils.yamler.converter.Converter;
+
+import net.cubespace.Yamler.Config.Converter.Converter;
+import net.cubespace.Yamler.Config.InternalConverter;
 
 import java.lang.reflect.ParameterizedType;
 

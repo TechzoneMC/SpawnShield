@@ -23,11 +23,10 @@
 package net.techcable.spawnshield.config;
 
 import com.google.common.base.Throwables;
+import net.cubespace.Yamler.Config.Comments;
+import net.cubespace.Yamler.Config.Config;
+import net.cubespace.Yamler.Config.InvalidConfigurationException;
 import net.techcable.spawnshield.SpawnShield;
-import net.techcable.techutils.collect.Pair;
-import net.techcable.techutils.yamler.Comments;
-import net.techcable.techutils.yamler.Config;
-import net.techcable.techutils.yamler.InvalidConfigurationException;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
