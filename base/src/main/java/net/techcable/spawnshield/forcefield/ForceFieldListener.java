@@ -1,6 +1,6 @@
 /**
  * The MIT License
- * Copyright (c) 2014-2015 Techcable
+ * Copyright (c) 2015 Techcable
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@ package net.techcable.spawnshield.forcefield;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.MoreExecutors;
-import net.techcable.spawnshield.CombatAPI;
+import net.techcable.spawnshield.combattag.CombatTagHelper;
 import net.techcable.spawnshield.SpawnShield;
 import net.techcable.spawnshield.SpawnShieldPlayer;
 import net.techcable.spawnshield.compat.BlockPos;
@@ -44,7 +44,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentMap;
 
 public class ForceFieldListener implements Listener {
     private final Set<UUID> currentlyProcessing = Sets.newSetFromMap(Maps.<UUID, Boolean>newConcurrentMap());
@@ -53,7 +52,7 @@ public class ForceFieldListener implements Listener {
         if (event.getFrom().equals(event.getTo())) return; //Don't wanna fire if the player turned his head
         if (currentlyProcessing.contains(event.getPlayer().getUniqueId())) return;
         final SpawnShieldPlayer player = SpawnShield.getInstance().getPlayer(event.getPlayer());
-        if (!CombatAPI.isTagged(event.getPlayer())) {
+        if (!CombatTagHelper.isTagged(event.getPlayer())) {
             if (player.getLastShownBlocks() != null && !currentlyProcessing.contains(player.getId())) {
                 currentlyProcessing.add(player.getId());
                 new BukkitRunnable() {

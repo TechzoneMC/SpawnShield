@@ -1,6 +1,6 @@
 /**
  * The MIT License
- * Copyright (c) 2014-2015 Techcable
+ * Copyright (c) 2015 Techcable
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,17 +22,13 @@
  */
 package net.techcable.spawnshield.tasks;
 
-import net.techcable.spawnshield.CombatAPI;
+import net.techcable.spawnshield.combattag.CombatTagHelper;
 import net.techcable.spawnshield.SpawnShield;
 import net.techcable.spawnshield.SpawnShieldPlayer;
 import net.techcable.spawnshield.compat.Region;
-import net.techcable.techutils.collect.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -43,7 +39,7 @@ public class KnockbackTask extends BukkitRunnable {
         for (Player playerEntity : Bukkit.getOnlinePlayers()) {
             SpawnShieldPlayer player = SpawnShield.getInstance().getPlayer(playerEntity);
             if (isBlocked(playerEntity.getLocation())) {
-                if (!CombatAPI.isTagged(playerEntity)) continue;
+                if (!CombatTagHelper.isTagged(playerEntity)) continue;
                 if (player.getLastLocationOutsideSafezone() == null) return;
                 if (player.getLastCantEnterMessageTime() + 1500 < System.currentTimeMillis()) {
                     playerEntity.sendMessage(SpawnShield.getInstance().getMessages().getCantEnterSafezone());

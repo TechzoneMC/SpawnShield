@@ -1,6 +1,6 @@
 /**
  * The MIT License
- * Copyright (c) 2014-2015 Techcable
+ * Copyright (c) 2015 Techcable
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,16 +22,14 @@
  */
 package net.techcable.spawnshield.tasks;
 
-import net.techcable.spawnshield.CombatAPI;
+import net.techcable.spawnshield.combattag.CombatTagHelper;
 import net.techcable.spawnshield.SpawnShield;
 import net.techcable.spawnshield.SpawnShieldPlayer;
 import net.techcable.spawnshield.Utils;
 import net.techcable.spawnshield.compat.Region;
 import net.techcable.spawnshield.config.SpawnShieldMessages;
-import net.techcable.techutils.collect.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -43,7 +41,7 @@ public class TeleportSafezoningTask extends BukkitRunnable {
         for (Player playerEntity : Bukkit.getOnlinePlayers()) {
             SpawnShieldPlayer player = SpawnShield.getInstance().getPlayer(playerEntity);
             if (isBlocked(playerEntity.getLocation())) {
-                if (CombatAPI.isTagged(playerEntity)){
+                if (CombatTagHelper.isTagged(playerEntity)){
                     if (player.getLastLocationOutsideSafezone() == null) {
                         Utils.warning(player.getName() + "'s last location outside safezone is unknown");
                     } else {

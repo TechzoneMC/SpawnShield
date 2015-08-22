@@ -13,6 +13,6 @@ permissions:
 softdepend:
   - PvPManager
   - CombatTag
-  - CombatTagReloaded
+  - CombatTagPlus
 depend:
   - WorldGuard

@@ -3,7 +3,7 @@
     <parent>
         <groupId>net.techcable.spawnshield</groupId>
         <artifactId>parent</artifactId>
-        <version>1.1.0</version>
+        <version>1.1.0-stable-SNAPSHOT</version>
     </parent>
     <artifactId>base</artifactId>
     <dependencies>
@@ -20,6 +20,13 @@
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
+        <!-- Classpath Scanning -->
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.10</version>
+            <scope>compile</scope>
+        </dependency>
         <!-- Compatibility -->
         <dependency>
             <groupId>net.techcable.spawnshield</groupId>
@@ -30,6 +37,25 @@
             <groupId>net.techcable.spawnshield</groupId>
             <artifactId>worldguard6</artifactId>
             <version>${project.parent.version}</version>
+        </dependency>
+        <!-- CombatTag Plugin Compatibility -->
+        <dependency>
+            <groupId>net.techcable.spawnshield</groupId>
+            <artifactId>combat-tag</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.techcable.spawnshield</groupId>
+            <artifactId>combat-tag-plus</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.techcable.spawnshield</groupId>
+            <artifactId>pvp-manager</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

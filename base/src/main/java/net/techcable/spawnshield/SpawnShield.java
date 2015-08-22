@@ -1,6 +1,6 @@
 /**
  * The MIT License
- * Copyright (c) 2014-2015 Techcable
+ * Copyright (c) 2015 Techcable
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
 package net.techcable.spawnshield;
 
 import lombok.Getter;
+import net.techcable.spawnshield.combattag.CombatTagHelper;
 import net.techcable.spawnshield.compat.worldguard6.WorldGuard6Plugin;
 import net.techcable.spawnshield.config.SpawnShieldConfig;
 import net.techcable.spawnshield.config.SpawnShieldMessages;
@@ -52,7 +53,7 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
     @Override
     protected void startup() {
         Utils.info("Loading SpawnShield by Techcable");
-        if (!CombatAPI.isInstalled()) {
+        if (!CombatTagHelper.isInstalled()) {
             Utils.severe("No Combat Tagging Plugin Installed");
             Utils.severe("Shutting down");
             setEnabled(false);

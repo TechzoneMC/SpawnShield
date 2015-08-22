@@ -9,12 +9,16 @@
     <artifactId>parent</artifactId>
     <packaging>pom</packaging>
     <name>SpawnShield</name>
-    <version>1.1.0</version>
+    <version>1.1.0-stable-SNAPSHOT</version>
     <description>Prevents people from entering spawn in combat</description>
     <repositories>
         <repository>
             <id>techcable-repo</id>
             <url>http://repo.techcable.net/content/groups/public/</url>
+        </repository>
+        <repository>
+            <id>minelink-repo</id>
+            <url>http://repo.minelink.net/content/groups/public/</url>
         </repository>
         <repository>
             <id>oss-repo</id>
@@ -29,6 +33,10 @@
         <module>api</module>
         <module>base</module>
         <module>worldguard6</module>
+        <!-- CombatTag plugins -->
+        <module>combat-tag</module>
+        <module>combat-tag-plus</module>
+        <module>pvp-manager</module>
     </modules>
     <dependencies>
         <dependency>
@@ -61,6 +69,10 @@
                                 <relocation>
                                     <pattern>com.google.gson</pattern>
                                     <shadedPattern>net.techcable.spawnshield.libs.gson</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.reflections</pattern>
+                                    <shadedPattern>net.techcable.spawnshield.libs.reflections</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
