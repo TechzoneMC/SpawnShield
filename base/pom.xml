@@ -3,22 +3,15 @@
     <parent>
         <groupId>net.techcable.spawnshield</groupId>
         <artifactId>parent</artifactId>
-        <version>1.1.0-stable-SNAPSHOT</version>
+        <version>1.2.0</version>
     </parent>
     <artifactId>base</artifactId>
     <dependencies>
         <dependency>
             <groupId>net.techcable</groupId>
             <artifactId>techutils</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
+            <version>1.1.2-SNAPSHOT</version>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.trc202</groupId>
-            <artifactId>combattag</artifactId>
-            <version>6.4.1-SNAPSHOT</version>
-            <scope>provided</scope>
-            <optional>true</optional>
         </dependency>
         <!-- The current version of TechUtils doesn't include Yamler -->
         <dependency>

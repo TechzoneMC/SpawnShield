@@ -3,18 +3,21 @@
     <parent>
         <groupId>net.techcable</groupId>
         <artifactId>parent</artifactId>
-        <version>1.0.4</version>
+        <version>1.0.9</version>
     </parent>
     <groupId>net.techcable.spawnshield</groupId>
     <artifactId>parent</artifactId>
     <packaging>pom</packaging>
     <name>SpawnShield</name>
-    <version>1.1.0-stable-SNAPSHOT</version>
+    <version>1.2.0</version>
     <description>Prevents people from entering spawn in combat</description>
+    <properties>
+        <java.version>1.8</java.version>
+    </properties>
     <repositories>
         <repository>
             <id>techcable-repo</id>
-            <url>http://repo.techcable.net/content/groups/public/</url>
+            <url>https://repo.techcable.net/content/groups/public/</url>
         </repository>
         <repository>
             <id>minelink-repo</id>

@@ -22,34 +22,16 @@
  */
 package net.techcable.spawnshield.combattag;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-
-import com.trc202.CombatTag.CombatTag;
-import com.trc202.CombatTagApi.CombatTagApi;
-
-import org.bukkit.plugin.Plugin;
-
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
-import net.techcable.techutils.Reflection;
-import org.reflections.ReflectionUtils;
+import com.google.common.collect.Iterables;
+
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.reflections.Reflections;
-import org.reflections.util.ClasspathHelper;
-
-import javax.annotation.Nullable;
-
-import static net.techcable.techutils.Reflection.*;
 
 /**
  * class to interface with Combat Tag, Combat Tag Reloaded, and PvPManager
