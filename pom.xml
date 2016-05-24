@@ -1,10 +1,5 @@
 <project>
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>net.techcable</groupId>
-        <artifactId>parent</artifactId>
-        <version>1.0.9</version>
-    </parent>
     <groupId>net.techcable.spawnshield</groupId>
     <artifactId>parent</artifactId>
     <packaging>pom</packaging>
@@ -86,6 +81,15 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
             </plugin>
         </plugins>
     </build>
