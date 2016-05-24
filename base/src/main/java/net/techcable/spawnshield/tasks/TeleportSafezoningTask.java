@@ -41,14 +41,14 @@ public class TeleportSafezoningTask extends BukkitRunnable {
     @Override
     public void run() {
         for (Player playerEntity : Bukkit.getOnlinePlayers()) {
-            SpawnShieldPlayer player = SpawnShield.getInstance().getPlayer(playerEntity);
+            SpawnShieldPlayer player = plugin.getPlayer(playerEntity);
             if (isBlocked(playerEntity.getLocation())) {
                 if (plugin.getCombatTagPlugin().isTagged(playerEntity)){
                     if (player.getLastLocationOutsideSafezone() == null) {
-                        SpawnShield.getInstance().getLogger().warning(player.getName() + "'s last location outside safezone is unknown");
+                        plugin.getLogger().warning(player.getName() + "'s last location outside safezone is unknown");
                     } else {
                         if (player.getLastCantEnterMessageTime() + 1500 < System.currentTimeMillis()) {
-                            playerEntity.sendMessage(SpawnShieldMessages.getInstance().getCantEnterSafezone());
+                            playerEntity.sendMessage(plugin.getMessages().getCantEnterSafezone());
                             player.setLastCantEnterMessageTime(System.currentTimeMillis());
                         }
                         playerEntity.teleport(player.getLastLocationOutsideSafezone(), PlayerTeleportEvent.TeleportCause.PLUGIN);
@@ -61,7 +61,7 @@ public class TeleportSafezoningTask extends BukkitRunnable {
     }
 
     public boolean isBlocked(Location l) {
-        for (Region r : SpawnShield.getInstance().getSettings().getRegionsToBlock()) {
+        for (Region r : plugin.getSettings().getRegionsToBlock()) {
             if (r.contains(l.getBlockX(), l.getBlockY(), l.getBlockZ())) return true;
         }
         return false;

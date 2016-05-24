@@ -22,6 +22,8 @@
  */
 package net.techcable.spawnshield;
 
+import lombok.*;
+
 import net.techcable.spawnshield.compat.ProtectionPlugin;
 import net.techcable.spawnshield.compat.Region;
 import org.bukkit.Bukkit;
@@ -31,7 +33,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
+@RequiredArgsConstructor
 public class SpawnShieldExecutor implements CommandExecutor {
+    private final SpawnShield plugin;
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -72,11 +76,11 @@ public class SpawnShieldExecutor implements CommandExecutor {
                     return true;
                 }
                 boolean hasRegion = false;
-                for (ProtectionPlugin plugin : SpawnShield.getInstance().getSettings().getPlugins()) {
-                    if (!plugin.hasRegion(world, regionName)) continue;;
+                for (ProtectionPlugin protectionPlugin : plugin.getSettings().getPlugins()) {
+                    if (!protectionPlugin.hasRegion(world, regionName)) continue;;
                     hasRegion = true;
-                    Region region = plugin.getRegion(world, regionName);
-                    SpawnShield.getInstance().getSettings().addRegionToBlock(region);
+                    Region region = protectionPlugin.getRegion(world, regionName);
+                    plugin.getSettings().addRegionToBlock(region);
                     sender.sendMessage("Successfuly blocked region " + regionName + " in " + worldName);
                 }
                 if (!hasRegion) {
@@ -97,11 +101,11 @@ public class SpawnShieldExecutor implements CommandExecutor {
                     return true;
                 }
                 boolean hasRegion = false;
-                for (ProtectionPlugin plugin : SpawnShield.getInstance().getSettings().getPlugins()) {
-                    if (!plugin.hasRegion(world, regionName)) continue;;
+                for (ProtectionPlugin protectionPlugin : plugin.getSettings().getPlugins()) {
+                    if (!protectionPlugin.hasRegion(world, regionName)) continue;;
                     hasRegion = true;
-                    Region region = plugin.getRegion(world, regionName);
-                    SpawnShield.getInstance().getSettings().addRegionToBlock(region);
+                    Region region = protectionPlugin.getRegion(world, regionName);
+                    plugin.getSettings().addRegionToBlock(region);
                 }
                 if (hasRegion) {
                     sender.sendMessage("Successfuly unblocked region " + regionName + " in " + worldName);
@@ -111,7 +115,7 @@ public class SpawnShieldExecutor implements CommandExecutor {
                 return true;
             } else if (subSubCommand.equalsIgnoreCase("list")) {
                 sender.sendMessage(color("&b Blocked Regions"));
-                for (Region region : SpawnShield.getInstance().getSettings().getRegionsToBlock()) {
+                for (Region region : plugin.getSettings().getRegionsToBlock()) {
                     sender.sendMessage("&7Region&r " + region.getName() + " &7in world&r " + region.getWorld().getName());
                 }
                 return true;

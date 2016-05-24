@@ -41,12 +41,12 @@ public class KnockbackTask extends BukkitRunnable {
     @Override
     public void run() {
         for (Player playerEntity : Bukkit.getOnlinePlayers()) {
-            SpawnShieldPlayer player = SpawnShield.getInstance().getPlayer(playerEntity);
+            SpawnShieldPlayer player = plugin.getPlayer(playerEntity);
             if (isBlocked(playerEntity.getLocation())) {
                 if (!plugin.getCombatTagPlugin().isTagged(playerEntity)) continue;
                 if (player.getLastLocationOutsideSafezone() == null) return;
                 if (player.getLastCantEnterMessageTime() + 1500 < System.currentTimeMillis()) {
-                    playerEntity.sendMessage(SpawnShield.getInstance().getMessages().getCantEnterSafezone());
+                    playerEntity.sendMessage(plugin.getMessages().getCantEnterSafezone());
                     player.setLastCantEnterMessageTime(System.currentTimeMillis());
                 }
                 Vector knockback = player.getLastLocationOutsideSafezone().toVector().subtract(playerEntity.getLocation().toVector());
@@ -59,7 +59,7 @@ public class KnockbackTask extends BukkitRunnable {
     }
 
     public boolean isBlocked(Location l) {
-        for (Region r : SpawnShield.getInstance().getSettings().getRegionsToBlock()) {
+        for (Region r : plugin.getSettings().getRegionsToBlock()) {
             if (r.contains(l.getBlockX(), l.getBlockY(), l.getBlockZ())) return true;
         }
         return false;

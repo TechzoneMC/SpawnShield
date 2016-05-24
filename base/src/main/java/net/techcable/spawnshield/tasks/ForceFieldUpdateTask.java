@@ -22,33 +22,31 @@
  */
 package net.techcable.spawnshield.tasks;
 
-import com.google.common.collect.*;
-import com.google.common.util.concurrent.AbstractFuture;
-import com.google.common.util.concurrent.ListenableFuture;
-import lombok.RequiredArgsConstructor;
-
-import net.techcable.spawnshield.SpawnShield;
-import net.techcable.spawnshield.compat.BlockPos;
-import net.techcable.spawnshield.compat.Region;
-import net.techcable.spawnshield.forcefield.*;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
+import lombok.*;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.AbstractFuture;
+import com.google.common.util.concurrent.ListenableFuture;
+
+import net.techcable.spawnshield.SpawnShield;
+import net.techcable.spawnshield.compat.BlockPos;
+import net.techcable.spawnshield.compat.Region;
+import net.techcable.spawnshield.forcefield.BorderFinder;
+import net.techcable.spawnshield.forcefield.ForceFieldUpdateRequest;
+
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+
 @RequiredArgsConstructor
 public class ForceFieldUpdateTask extends AbstractFuture implements Runnable, ListenableFuture {
-
-    public static ListenableFuture<?> schedule(ForceFieldUpdateRequest request) {
-        ForceFieldUpdateTask task = new ForceFieldUpdateTask(request);
-        Bukkit.getScheduler().runTask(SpawnShield.getInstance(), task);
-        return task;
-    }
+    private final SpawnShield plugin;
     private final ForceFieldUpdateRequest request;
+
     @Override
     public void run() {
         Set<BlockPos> shownBlocks = new HashSet<BlockPos>();
@@ -80,8 +78,8 @@ public class ForceFieldUpdateTask extends AbstractFuture implements Runnable, Li
     private final Map<Region, Collection<BlockPos>> borderCache = Maps.newHashMap(); //Will only be accessed by a single task, so no need for synchronization
     private Collection<BlockPos> getBorders(Region region) {
         if (borderCache.size() > 50) {
-            SpawnShield.getInstance().getLogger().severe("Cache exceeded 50 entries, which should never happen.");
-            SpawnShield.getInstance().getLogger().severe("Clearing cache");
+            plugin.getLogger().severe("Cache exceeded 50 entries, which should never happen.");
+            plugin.getLogger().severe("Clearing cache");
             borderCache.clear();
         }
         if (!borderCache.containsKey(region)) {

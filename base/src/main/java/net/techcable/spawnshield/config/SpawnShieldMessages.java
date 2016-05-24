@@ -67,8 +67,4 @@ public class SpawnShieldMessages extends Config {
     public static String color(String s) {
         return ChatColor.translateAlternateColorCodes('&', s);
     }
-
-    public static SpawnShieldMessages getInstance() {
-        return SpawnShield.getInstance().getMessages();
-    }
 }

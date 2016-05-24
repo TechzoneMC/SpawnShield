@@ -64,10 +64,10 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
 
     @Override
     protected void startup() {
-        getInstance().getLogger().info("Loading SpawnShield by Techcable");
+        getLogger().info("Loading SpawnShield by Techcable");
         if (getCombatTagPlugins().isEmpty()) {
-            getInstance().getLogger().severe("No Combat Tagging Plugin Installed");
-            getInstance().getLogger().severe("Shutting down");
+            getLogger().severe("No Combat Tagging Plugin Installed");
+            getLogger().severe("Shutting down");
             setEnabled(false);
             return;
         } else {
@@ -109,7 +109,7 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
             });
             metrics.start();
         } catch (IOException e) {
-            getInstance().getLogger().warning("Unable to run metrics");
+            getLogger().warning("Unable to run metrics");
         }
         if (getSettings().isDebug()) {
             getLogger().setLevel(Level.FINE);
@@ -119,18 +119,18 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
         if (Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
             String version = Bukkit.getPluginManager().getPlugin("WorldGuard").getDescription().getVersion();
             if (version.startsWith("6")) {
-                getInstance().getLogger().info("Worldguard 6 Detected, Activating support");
+                getLogger().info("Worldguard 6 Detected, Activating support");
                 WorldGuard6Plugin hook = new WorldGuard6Plugin();
                 getSettings().addProtectionPlugin(hook);
                 numPluginsAdded++;
             }
         }
         if (numPluginsAdded == 0) {
-            getInstance().getLogger().severe("No supported protection plugin found, shutting down");
+            getLogger().severe("No supported protection plugin found, shutting down");
             setEnabled(false);
             return;
         }
-        getCommand("spawnshield").setExecutor(new SpawnShieldExecutor());
+        getCommand("spawnshield").setExecutor(new SpawnShieldExecutor(this));
         switch (settings.getMode()) {
             case FORCEFIELD :
                 this.forceFieldListener = new ForceFieldListener(this);
@@ -145,7 +145,7 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
                 knockbackTask.runTaskTimer(this, 5, 5); //Every 1/4 of a tick
                 break;
             default :
-                getInstance().getLogger().severe("[SpawnShield] Unknown Plugin Mode");
+                getLogger().severe("[SpawnShield] Unknown Plugin Mode");
                 setEnabled(false);
                 return;
         }
@@ -207,9 +207,5 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
     @Override
     public SpawnShieldPlayer createPlayer(UUID id) {
         return new SpawnShieldPlayer(id, this);
-    }
-
-    public static SpawnShield getInstance() {
-        return JavaPlugin.getPlugin(SpawnShield.class);
     }
 }

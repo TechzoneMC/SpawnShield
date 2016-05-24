@@ -57,7 +57,7 @@ public class ForceFieldListener implements Listener {
     public void onMove(PlayerMoveEvent event) {
         if (event.getFrom().equals(event.getTo())) return; //Don't wanna fire if the player turned his head
         if (currentlyProcessing.contains(event.getPlayer().getUniqueId())) return;
-        final SpawnShieldPlayer player = SpawnShield.getInstance().getPlayer(event.getPlayer());
+        final SpawnShieldPlayer player = plugin.getPlayer(event.getPlayer());
         if (!plugin.getCombatTagPlugin().isTagged(event.getPlayer())) {
             if (player.getLastShownBlocks() != null && !currentlyProcessing.contains(player.getId())) {
                 currentlyProcessing.add(player.getId());
@@ -70,20 +70,20 @@ public class ForceFieldListener implements Listener {
                         player.setLastShownBlocks(null);
                         currentlyProcessing.remove(player.getId());
                     }
-                }.runTaskAsynchronously(SpawnShield.getInstance());
+                }.runTaskAsynchronously(plugin);
             }
             return;
         }
         currentlyProcessing.add(player.getId());
         BlockPos pos = new BlockPos(player.getEntity().getLocation());
         Collection<Region> toUpdate = new HashSet<>();
-        for (Region region : SpawnShield.getInstance().getSettings().getRegionsToBlock()) {
+        for (Region region : plugin.getSettings().getRegionsToBlock()) {
             if (!region.getWorld().equals(event.getPlayer().getWorld())) continue; //We dont need this one: Yay!
             toUpdate.add(region);
         }
-        ForceFieldUpdateRequest request = new ForceFieldUpdateRequest(pos, toUpdate, player, SpawnShield.getInstance().getSettings().getForcefieldRange());
-        final ForceFieldUpdateTask task = new ForceFieldUpdateTask(request);
-        Bukkit.getScheduler().runTaskAsynchronously(SpawnShield.getInstance(), task);
+        ForceFieldUpdateRequest request = new ForceFieldUpdateRequest(pos, toUpdate, player, plugin.getSettings().getForcefieldRange());
+        final ForceFieldUpdateTask task = new ForceFieldUpdateTask(plugin, request);
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, task);
         task.addListener(new Runnable() {
             @Override
             public void run() {

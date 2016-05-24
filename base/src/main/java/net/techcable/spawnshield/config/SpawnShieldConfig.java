@@ -23,11 +23,12 @@
 package net.techcable.spawnshield.config;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Synchronized;
+
+import lombok.*;
+
 import net.cubespace.Yamler.Config.Comments;
 import net.cubespace.Yamler.Config.Config;
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
@@ -49,13 +50,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 public class SpawnShieldConfig extends Config {
+    private final SpawnShield plugin;
+
+    @SneakyThrows(InvalidConverterException.class)
     public SpawnShieldConfig(SpawnShield plugin) {
         CONFIG_FILE = new File(plugin.getDataFolder(), "config.yml");
-        try {
-            addConverter(BlockMode.BlockModeConverter.class);
-        } catch (InvalidConverterException e) {
-            throw Throwables.propagate(e);
-        }
+        addConverter(BlockMode.BlockModeConverter.class);
+        this.plugin = plugin;
     }
 
     @Override
@@ -134,7 +135,7 @@ public class SpawnShieldConfig extends Config {
     }
 
     @Getter(AccessLevel.NONE)
-    private transient Set<Region> cachedRegionsToBlock;
+    private transient volatile ImmutableSet<Region> cachedRegionsToBlock;
 
     @Synchronized("lock")
     public void addProtectionPlugin(ProtectionPlugin plugin) {
@@ -151,7 +152,7 @@ public class SpawnShieldConfig extends Config {
         if (cachedRegionsToBlock != null) return cachedRegionsToBlock;
         synchronized (lock) {
             if (cachedRegionsToBlock != null) return cachedRegionsToBlock;
-            cachedRegionsToBlock = Sets.newSetFromMap(new ConcurrentHashMap<Region, Boolean>());
+            ImmutableSet.Builder<Region> regionsBuilder = ImmutableSet.builder();
             Set<String> notFound = Sets.newHashSet(blockRegions);
             for (ProtectionPlugin plugin : plugins) {
                 for (World world : Bukkit.getWorlds()) {
@@ -159,15 +160,16 @@ public class SpawnShieldConfig extends Config {
                         if (!plugin.hasRegion(world, regionName)) continue;
                         Region region = plugin.getRegion(world, regionName);
                         notFound.remove(regionName); //We found it !!
-                        cachedRegionsToBlock.add(region);
+                        regionsBuilder.add(region);
                     }
                 }
             }
             //Warn if we couldn't find a worldguard region
             for (String regionName : notFound) {
-                SpawnShield.getInstance().getLogger().warning(regionName + " is not a known region");
+                plugin.getLogger().warning(regionName + " is not a known region");
             }
-            return cachedRegionsToBlock;
+            cachedRegionsToBlock = regionsBuilder.build();
         }
+        return cachedRegionsToBlock;
     }
 }
