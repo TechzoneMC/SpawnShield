@@ -22,9 +22,11 @@
  */
 package net.techcable.spawnshield.tasks;
 
-import net.techcable.spawnshield.combattag.CombatTagHelper;
+import lombok.*;
+
 import net.techcable.spawnshield.SpawnShield;
 import net.techcable.spawnshield.SpawnShieldPlayer;
+import net.techcable.spawnshield.combattag.CombatTagPlugin;
 import net.techcable.spawnshield.compat.Region;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -32,14 +34,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+@RequiredArgsConstructor
 public class KnockbackTask extends BukkitRunnable {
+    private final SpawnShield plugin;
 
     @Override
     public void run() {
         for (Player playerEntity : Bukkit.getOnlinePlayers()) {
             SpawnShieldPlayer player = SpawnShield.getInstance().getPlayer(playerEntity);
             if (isBlocked(playerEntity.getLocation())) {
-                if (!CombatTagHelper.isTagged(playerEntity)) continue;
+                if (!plugin.getCombatTagPlugin().isTagged(playerEntity)) continue;
                 if (player.getLastLocationOutsideSafezone() == null) return;
                 if (player.getLastCantEnterMessageTime() + 1500 < System.currentTimeMillis()) {
                     playerEntity.sendMessage(SpawnShield.getInstance().getMessages().getCantEnterSafezone());

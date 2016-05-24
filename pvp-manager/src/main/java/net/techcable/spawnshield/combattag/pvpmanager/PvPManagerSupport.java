@@ -22,6 +22,7 @@
  */
 package net.techcable.spawnshield.combattag.pvpmanager;
 
+import lombok.*;
 import me.NoChance.PvPManager.Config.Variables;
 import me.NoChance.PvPManager.PvPManager;
 import me.NoChance.PvPManager.PvPlayer;
@@ -36,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 
 public class PvPManagerSupport implements CombatTagPlugin {
     public static final String PLUGIN_NAME = "PvPManager";
+    @Getter
     private final PvPManager plugin;
 
     public PvPManagerSupport() {

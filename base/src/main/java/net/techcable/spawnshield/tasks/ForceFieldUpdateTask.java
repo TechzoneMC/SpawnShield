@@ -22,26 +22,18 @@
  */
 package net.techcable.spawnshield.tasks;
 
-import com.google.common.base.Function;
-import com.google.common.base.Supplier;
 import com.google.common.collect.*;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.Delegate;
+
 import net.techcable.spawnshield.SpawnShield;
-import net.techcable.spawnshield.SpawnShieldPlayer;
-import net.techcable.spawnshield.Utils;
 import net.techcable.spawnshield.compat.BlockPos;
 import net.techcable.spawnshield.compat.Region;
 import net.techcable.spawnshield.forcefield.*;
-import net.techcable.techutils.collect.Pair;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -88,8 +80,8 @@ public class ForceFieldUpdateTask extends AbstractFuture implements Runnable, Li
     private final Map<Region, Collection<BlockPos>> borderCache = Maps.newHashMap(); //Will only be accessed by a single task, so no need for synchronization
     private Collection<BlockPos> getBorders(Region region) {
         if (borderCache.size() > 50) {
-            Utils.severe("Cache exceeded 50 entries, which should never happen.");
-            Utils.severe("Clearing cache");
+            SpawnShield.getInstance().getLogger().severe("Cache exceeded 50 entries, which should never happen.");
+            SpawnShield.getInstance().getLogger().severe("Clearing cache");
             borderCache.clear();
         }
         if (!borderCache.containsKey(region)) {

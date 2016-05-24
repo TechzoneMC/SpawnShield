@@ -22,15 +22,23 @@
  */
 package net.techcable.spawnshield.forcefield;
 
+import lombok.*;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.MoreExecutors;
-import net.techcable.spawnshield.combattag.CombatTagHelper;
+
 import net.techcable.spawnshield.SpawnShield;
 import net.techcable.spawnshield.SpawnShieldPlayer;
 import net.techcable.spawnshield.compat.BlockPos;
 import net.techcable.spawnshield.compat.Region;
 import net.techcable.spawnshield.tasks.ForceFieldUpdateTask;
+
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -40,19 +48,17 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
+@RequiredArgsConstructor
 public class ForceFieldListener implements Listener {
+    private final SpawnShield plugin;
+
     private final Set<UUID> currentlyProcessing = Sets.newSetFromMap(Maps.<UUID, Boolean>newConcurrentMap());
     @EventHandler(priority = EventPriority.MONITOR)
     public void onMove(PlayerMoveEvent event) {
         if (event.getFrom().equals(event.getTo())) return; //Don't wanna fire if the player turned his head
         if (currentlyProcessing.contains(event.getPlayer().getUniqueId())) return;
         final SpawnShieldPlayer player = SpawnShield.getInstance().getPlayer(event.getPlayer());
-        if (!CombatTagHelper.isTagged(event.getPlayer())) {
+        if (!plugin.getCombatTagPlugin().isTagged(event.getPlayer())) {
             if (player.getLastShownBlocks() != null && !currentlyProcessing.contains(player.getId())) {
                 currentlyProcessing.add(player.getId());
                 new BukkitRunnable() {

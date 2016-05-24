@@ -22,6 +22,9 @@
  */
 package net.techcable.spawnshield.combattag.legacy;
 
+import lombok.*;
+
+import com.google.common.base.Verify;
 import com.trc202.CombatTag.CombatTag;
 import com.trc202.CombatTagApi.CombatTagApi;
 import net.techcable.spawnshield.combattag.CombatTagPlugin;
@@ -33,17 +36,24 @@ import org.bukkit.plugin.Plugin;
 public class CombatTagLegacySupport implements CombatTagPlugin {
     public static final String PLUGIN_NAME = "CombatTag";
     private final CombatTagApi api;
+    @Getter
+    private final Plugin plugin;
 
     public CombatTagLegacySupport() {
-        CombatTagApi api;
+        CombatTagApi api = null;
+        Plugin plugin = Bukkit.getPluginManager().getPlugin(PLUGIN_NAME);
         try {
             api = CombatTagApi.getInstance();
         } catch (NoClassDefFoundError | NoSuchMethodError e) { // Old version or not installed
-            Plugin rawPlugin = Bukkit.getPluginManager().getPlugin(PLUGIN_NAME);
-            CombatTag plugin = rawPlugin instanceof CombatTag ? (CombatTag) rawPlugin : null;
-            api = plugin != null ? new CombatTagApi(plugin) : null;
+            try {
+                if (plugin instanceof CombatTag) {
+                    api = new CombatTagApi((CombatTag) plugin);
+                }
+            } catch (NoClassDefFoundError | NoSuchMethodError ignored) {}
         }
+        Verify.verify((plugin == null) == (api == null), "Could %s plugin, but could %s api!", plugin == null ? "not find" : "find", api == null ? "not find" : "find");
         this.api = api;
+        this.plugin = plugin;
     }
 
     @Override

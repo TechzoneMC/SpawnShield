@@ -23,29 +23,36 @@
 package net.techcable.spawnshield;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
+
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Utils {
 
-    public static void severe(String error) {
-        Bukkit.getLogger().severe("[SpawnShield] " + error);
-    }
-
-    public static void warning(String error) {
-        Bukkit.getLogger().warning("[SpawnShield] " + error);
-    }
-
-    public static void debug(String msg) {
-        if (SpawnShield.getInstance().getSettings().isDebug()) {
-            info(msg);
+    public static String getAuthors(Plugin plugin) {
+        List<String> authors = plugin.getDescription().getAuthors();
+        switch (authors.size()) {
+            case 0:
+                return "unknown author";
+            case 1:
+                return authors.get(0);
+            default:
+                StringBuilder builder = new StringBuilder();
+                for (int i = 0; i < authors.size() - 1; i++) {
+                    if (i != 0) builder.append(", ");
+                    builder.append(authors.get(i));
+                }
+                builder.append(", and ");
+                builder.append(authors.get(authors.size() - 1));
+                return builder.toString();
         }
-    }
-
-    public static void info(String msg) {
-        Bukkit.getLogger().info("[SpawnShield] " + msg);
     }
 
     public static void assertMainThread() {

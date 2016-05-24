@@ -22,10 +22,10 @@
  */
 package net.techcable.spawnshield.tasks;
 
-import net.techcable.spawnshield.combattag.CombatTagHelper;
+import lombok.*;
+
 import net.techcable.spawnshield.SpawnShield;
 import net.techcable.spawnshield.SpawnShieldPlayer;
-import net.techcable.spawnshield.Utils;
 import net.techcable.spawnshield.compat.Region;
 import net.techcable.spawnshield.config.SpawnShieldMessages;
 import org.bukkit.Bukkit;
@@ -34,16 +34,18 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
+@RequiredArgsConstructor
 public class TeleportSafezoningTask extends BukkitRunnable {
+    private final SpawnShield plugin;
 
     @Override
     public void run() {
         for (Player playerEntity : Bukkit.getOnlinePlayers()) {
             SpawnShieldPlayer player = SpawnShield.getInstance().getPlayer(playerEntity);
             if (isBlocked(playerEntity.getLocation())) {
-                if (CombatTagHelper.isTagged(playerEntity)){
+                if (plugin.getCombatTagPlugin().isTagged(playerEntity)){
                     if (player.getLastLocationOutsideSafezone() == null) {
-                        Utils.warning(player.getName() + "'s last location outside safezone is unknown");
+                        SpawnShield.getInstance().getLogger().warning(player.getName() + "'s last location outside safezone is unknown");
                     } else {
                         if (player.getLastCantEnterMessageTime() + 1500 < System.currentTimeMillis()) {
                             playerEntity.sendMessage(SpawnShieldMessages.getInstance().getCantEnterSafezone());

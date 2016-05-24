@@ -23,10 +23,12 @@
 package net.techcable.spawnshield.combattag;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 
@@ -38,7 +40,7 @@ import java.util.Set;
 
 @RequiredArgsConstructor
 public final class MultiPluginCombatTagPlugin implements CombatTagPlugin {
-    private final Set<CombatTagPlugin> plugins;
+    private final ImmutableList<CombatTagPlugin> plugins;
 
     @Override
     public boolean isTagged(Player player) {
@@ -87,6 +89,11 @@ public final class MultiPluginCombatTagPlugin implements CombatTagPlugin {
     @Override
     public boolean isInstalled() {
         return plugins.size() > 0;
+    }
+
+    @Override
+    public Plugin getPlugin() {
+        throw new UnsupportedOperationException();
     }
 
     private void assertPluginsFound() {

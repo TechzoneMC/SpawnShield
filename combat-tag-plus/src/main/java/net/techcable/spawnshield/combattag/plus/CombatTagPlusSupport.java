@@ -22,6 +22,8 @@
  */
 package net.techcable.spawnshield.combattag.plus;
 
+import lombok.*;
+
 import net.minelink.ctplus.CombatTagPlus;
 import net.minelink.ctplus.Tag;
 import net.techcable.spawnshield.combattag.CombatTagPlugin;
@@ -34,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 
 public class CombatTagPlusSupport implements CombatTagPlugin {
     public static final String PLUGIN_NAME = "CombatTagPlus";
+    @Getter
     private final CombatTagPlus plugin;
 
     public CombatTagPlusSupport() {

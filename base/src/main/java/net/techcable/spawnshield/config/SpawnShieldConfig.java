@@ -165,7 +165,7 @@ public class SpawnShieldConfig extends Config {
             }
             //Warn if we couldn't find a worldguard region
             for (String regionName : notFound) {
-                Utils.warning(regionName + " is not a known region");
+                SpawnShield.getInstance().getLogger().warning(regionName + " is not a known region");
             }
             return cachedRegionsToBlock;
         }
