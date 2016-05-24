@@ -20,10 +20,6 @@
             <url>https://repo.techcable.net/content/groups/public/</url>
         </repository>
         <repository>
-            <id>minelink-repo</id>
-            <url>http://repo.minelink.net/content/groups/public/</url>
-        </repository>
-        <repository>
             <id>oss-repo</id>
             <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
@@ -44,6 +40,7 @@
         <module>combat-tag</module>
         <module>combat-tag-plus</module>
         <module>pvp-manager</module>
+        <module>heroes</module>
     </modules>
     <dependencies>
         <dependency>
