@@ -1,17 +1,17 @@
 /**
  * The MIT License
  * Copyright (c) 2015 Techcable
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,10 +27,12 @@ import lombok.*;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableList;
 
@@ -77,7 +79,8 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
                 Plugin providingPlugin = JavaPlugin.getProvidingPlugin(plugin.getClass());
                 getLogger().info(i + ") " + plugin.getPlugin().getName());
                 if (providingPlugin != plugin.getPlugin()) {
-                    getLogger().info("\t- this is provided by " + providingPlugin.getName() + " not implemented in " + plugin.getPlugin().getName() + " itself");;
+                    getLogger().info("\t- this is provided by " + providingPlugin.getName() + " not implemented in " + plugin.getPlugin().getName() + " itself");
+                    ;
                     getLogger().info("\t- therefore report bugs with the integration to " + Utils.getAuthors(providingPlugin) + ", not to " + Utils.getAuthors(plugin.getPlugin()));
                 }
             }
@@ -104,9 +107,18 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
             mode.addPlotter(new Metrics.Plotter("Teleport") {
                 @Override
                 public int getValue() {
-                    return getSettings().getMode() == BlockMode.KNOCKBACK ? 1 : 0;
+                    return getSettings().getMode() == BlockMode.TELEPORT ? 1 : 0;
                 }
             });
+            Metrics.Graph pluginGraph = metrics.createGraph("Combat Plugin");
+            for (CombatTagPlugin plugin : getCombatTagPlugins()) { // Get all plugins, even uninstalled ones
+                pluginGraph.addPlotter(new Metrics.Plotter(plugin.getPlugin().getName()) {
+                    @Override
+                    public int getValue() {
+                        return 1;
+                    }
+                });
+            }
             metrics.start();
         } catch (IOException e) {
             getLogger().warning("Unable to run metrics");
@@ -132,19 +144,19 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
         }
         getCommand("spawnshield").setExecutor(new SpawnShieldExecutor(this));
         switch (settings.getMode()) {
-            case FORCEFIELD :
+            case FORCEFIELD:
                 this.forceFieldListener = new ForceFieldListener(this);
                 registerListener(forceFieldListener);
                 break;
-            case TELEPORT :
+            case TELEPORT:
                 teleportSafezoningTask = new TeleportSafezoningTask(this);
                 teleportSafezoningTask.runTaskTimer(this, 5, 5); //Every 1/4 of a tick
                 break;
-            case KNOCKBACK :
+            case KNOCKBACK:
                 knockbackTask = new KnockbackTask(this);
                 knockbackTask.runTaskTimer(this, 5, 5); //Every 1/4 of a tick
                 break;
-            default :
+            default:
                 getLogger().severe("[SpawnShield] Unknown Plugin Mode");
                 setEnabled(false);
                 return;
@@ -191,12 +203,7 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
         return getServer().getServicesManager().getRegistrations(CombatTagPlugin.class).stream()
                 .map(RegisteredServiceProvider::getProvider)
                 .filter(CombatTagPlugin::isInstalled) // Only return installed plugins :)
-                .collect(Collector.<CombatTagPlugin, ImmutableList.Builder<CombatTagPlugin>, ImmutableList<CombatTagPlugin>>of(
-                        ImmutableList::builder,
-                        ImmutableList.Builder::add,
-                        (builder1, builder2) -> builder1.addAll(builder2.build()),
-                        ImmutableList.Builder::build
-                ));
+                .collect(Utils.immutableListCollector());
     }
 
     @Override
