@@ -37,7 +37,9 @@ import java.util.stream.Collectors;
 import com.google.common.collect.ImmutableList;
 
 import net.techcable.spawnshield.combattag.CombatTagPlugin;
-import net.techcable.spawnshield.combattag.MultiPluginCombatTagPlugin;
+import net.techcable.spawnshield.combattag.legacy.CombatTagLegacySupport;
+import net.techcable.spawnshield.combattag.plus.CombatTagPlusSupport;
+import net.techcable.spawnshield.combattag.pvpmanager.PvPManagerSupport;
 import net.techcable.spawnshield.compat.worldguard6.WorldGuard6Plugin;
 import net.techcable.spawnshield.config.SpawnShieldConfig;
 import net.techcable.spawnshield.config.SpawnShieldMessages;
@@ -51,7 +53,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.reflections.Reflections;
 
 @Getter
 public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
@@ -111,7 +112,7 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
                 }
             });
             Metrics.Graph pluginGraph = metrics.createGraph("Combat Plugin");
-            for (CombatTagPlugin plugin : getCombatTagPlugins()) { // Get all plugins, even uninstalled ones
+            for (CombatTagPlugin plugin : getCombatTagPlugins()) {
                 pluginGraph.addPlotter(new Metrics.Plotter(plugin.getPlugin().getName()) {
                     @Override
                     public int getValue() {
@@ -164,41 +165,19 @@ public class SpawnShield extends TechPlugin<SpawnShieldPlayer> {
     }
 
     public CombatTagPlugin getCombatTagPlugin() {
-        ImmutableList<CombatTagPlugin> plugins = getCombatTagPlugins();
-        switch (plugins.size()) {
-            case 0:
-                throw new IllegalStateException("No CombatTagPlugin installed!");
-            case 1:
-                return plugins.get(0);
-            default:
-                return new MultiPluginCombatTagPlugin(plugins);
-        }
+        return getServer().getServicesManager().getRegistrations(CombatTagPlugin.class).stream()
+                .filter((combatService) -> combatService.getProvider().isInstalled()) // Only consider installed plugins :)
+                .max((first, second) -> first.getPriority().compareTo(second.getPriority())) // Get the highest priortiy service
+                .map(RegisteredServiceProvider::getProvider)
+                .orElseThrow(() -> new IllegalStateException("No CombatTagPlugin installed!"));
     }
 
 
     public ImmutableList<CombatTagPlugin> getCombatTagPlugins() {
         if (getServer().getServicesManager().getRegistrations(this).isEmpty()) {
-            // Search classpath for our own impls
-            String className = CombatTagPlugin.class.getName();
-            String packageName = className.substring(0, className.lastIndexOf('.') - 1);
-            Set<Class<? extends CombatTagPlugin>> pluginTypes = new Reflections(packageName).getSubTypesOf(CombatTagPlugin.class);
-            for (Class<? extends CombatTagPlugin> pluginType : pluginTypes) {
-                if (pluginType == MultiPluginCombatTagPlugin.class) continue;
-                CombatTagPlugin plugin;
-                try {
-                    Constructor<? extends CombatTagPlugin> c = pluginType.getConstructor();
-                    c.setAccessible(true);
-                    plugin = c.newInstance();
-                } catch (NoSuchMethodException | InstantiationException e) {
-                    continue;
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException("Unable to call setAccessible() on " + pluginType.getSimpleName());
-                } catch (InvocationTargetException e) {
-                    Throwable cause = e.getTargetException();
-                    throw new RuntimeException("new " + pluginType.getSimpleName() + "() threw an exception", cause);
-                }
-                getServer().getServicesManager().register(CombatTagPlugin.class, plugin, this, ServicePriority.Normal);
-            }
+            getServer().getServicesManager().register(CombatTagPlugin.class, new CombatTagLegacySupport(), this, ServicePriority.Low);
+            getServer().getServicesManager().register(CombatTagPlugin.class, new PvPManagerSupport(), this, ServicePriority.Normal);
+            getServer().getServicesManager().register(CombatTagPlugin.class, new CombatTagPlusSupport(), this, ServicePriority.Normal);
         }
         return getServer().getServicesManager().getRegistrations(CombatTagPlugin.class).stream()
                 .map(RegisteredServiceProvider::getProvider)
