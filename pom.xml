@@ -35,7 +35,6 @@
         <module>combat-tag</module>
         <module>combat-tag-plus</module>
         <module>pvp-manager</module>
-        <module>heroes</module>
     </modules>
     <dependencies>
         <dependency>
